@@ -33,7 +33,7 @@ class database_test extends \phpbb_database_test_case
 		$this->table_prefix = $table_prefix;
 
 		$db = $this->new_dbal();
-		$this->db_tools = new \phpbb\db\tools($db);
+		$this->db_tools = new \phpbb\db\tools\tools($db);
 	}
 
 	public function test_karma_votes_table_exists()
