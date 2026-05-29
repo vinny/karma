@@ -21,11 +21,11 @@
 				<tr class="{% if row.S_ROW_COUNT is even %}bg1{% else %}bg2{% endif %}">
 					<td style="text-align: center; vertical-align: middle;">
 						{% if row.POSITION == 1 %}
-							<i class="icon fa-trophy fa-fw rank-gold" aria-hidden="true" title="{{ lang('KARMA_RANK_GOLD')|e('html_attr') }}" style="color: #D4AF37; font-size: 1.3em;"></i>
+							<i class="icon fa-trophy fa-fw rank-gold" aria-hidden="true" title="{{ lang('KARMA_RANK_GOLD')|e('html_attr') }}"></i>
 						{% elseif row.POSITION == 2 %}
-							<i class="icon fa-trophy fa-fw rank-silver" aria-hidden="true" title="{{ lang('KARMA_RANK_SILVER')|e('html_attr') }}" style="color: #C0C0C0; font-size: 1.3em;"></i>
+							<i class="icon fa-trophy fa-fw rank-silver" aria-hidden="true" title="{{ lang('KARMA_RANK_SILVER')|e('html_attr') }}"></i>
 						{% elseif row.POSITION == 3 %}
-							<i class="icon fa-trophy fa-fw rank-bronze" aria-hidden="true" title="{{ lang('KARMA_RANK_BRONZE')|e('html_attr') }}" style="color: #CD7F32; font-size: 1.3em;"></i>
+							<i class="icon fa-trophy fa-fw rank-bronze" aria-hidden="true" title="{{ lang('KARMA_RANK_BRONZE')|e('html_attr') }}"></i>
 						{% else %}
 							<strong>{{ row.POSITION }}</strong>
 						{% endif %}
@@ -37,7 +37,7 @@
 						{{ row.USER_FULL }}
 					</td>
 					<td style="text-align: center; vertical-align: middle;">
-						<span class="karma-rank-score-total" style="font-weight: bold; font-size: 1.1em;">{{ row.TOTAL_KARMA }}</span>
+						<span class="karma-rank-score-total">{{ row.TOTAL_KARMA }}</span>
 					</td>
 				</tr>
 			{% else %}

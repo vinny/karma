@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -55,7 +56,7 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_PRUNE_DAYS_EXPLAIN'		=> 'Specify the age threshold in days. Any vote logs recorded before this threshold will be permanently deleted.',
 	'VINNY_KARMA_PRUNE_SUCCESS'				=> 'Successfully pruned %d vote entries older than %d days.',
 
-	// Audit Log
+	// Log
 	'VINNY_KARMA_AUDIT_LOG'					=> 'Vote Log',
 	'VINNY_KARMA_AUDIT_VOTER'				=> 'Voter',
 	'VINNY_KARMA_AUDIT_AUTHOR'				=> 'Author',

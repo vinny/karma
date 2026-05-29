@@ -1,10 +1,10 @@
 {
 	"name": "vinny/karma",
 	"type": "phpbb-extension",
-	"description": "Karma score upvote/downvote system for posts authors",
+	"description": "Karma score upvote/downvote system for posts",
 	"homepage": "https://github.com/vinny",
 	"version": "1.0.0",
-	"time": "2026-05-26",
+	"time": "2026-05-29",
 	"keywords": [
 		"phpbb",
 		"extension",
@@ -22,7 +22,7 @@
 		"phpbb/phpbb": ">=3.3.0"
 	},
 	"extra": {
-		"display-name": "Karma",
+		"display-name": "Karma System",
 		"soft-require": {
 			"phpbb/phpbb": "^3.3.0"
 		}

@@ -25,6 +25,7 @@ services:
             - '@user'
             - '@notification_manager'
             - '@config'
+            - '@log'
             - '%core.root_path%'
             - '%core.php_ext%'
             - '%core.table_prefix%'

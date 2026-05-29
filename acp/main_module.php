@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -171,7 +172,7 @@ class main_module
 						{
 							// Delete votes cast by this user
 							$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
-								WHERE user_id = ' . $target_user_id;
+								WHERE user_id = ' . (int) $target_user_id;
 							$db->sql_query($sql);
 
 							// Delete votes received on posts authored by this user
@@ -179,20 +180,20 @@ class main_module
 								WHERE post_id IN (
 									SELECT post_id
 									FROM ' . POSTS_TABLE . '
-									WHERE poster_id = ' . $target_user_id . '
+									WHERE poster_id = ' . (int) $target_user_id . '
 								)';
 							$db->sql_query($sql);
 
 							// Reset karma score on their posts
 							$sql = 'UPDATE ' . POSTS_TABLE . '
 								SET post_karma = 0
-								WHERE poster_id = ' . $target_user_id;
+								WHERE poster_id = ' . (int) $target_user_id;
 							$db->sql_query($sql);
 
 							// Reset user's own karma score
 							$sql = 'UPDATE ' . USERS_TABLE . '
 								SET user_karma = 0
-								WHERE user_id = ' . $target_user_id;
+								WHERE user_id = ' . (int) $target_user_id;
 							$db->sql_query($sql);
 
 							// Run resync queries to ensure everything is recalculated for other users
@@ -243,7 +244,7 @@ class main_module
 					$prune_time = time() - ($prune_days * 86400);
 
 					$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
-						WHERE vote_time < ' . $prune_time;
+						WHERE vote_time < ' . (int) $prune_time;
 					$db->sql_query($sql);
 					$affected_rows = $db->sql_affectedrows();
 

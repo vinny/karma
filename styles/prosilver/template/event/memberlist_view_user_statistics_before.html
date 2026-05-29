@@ -1,4 +1,9 @@
 {% if S_SHOW_KARMA %}
 	<dt>{{ lang('KARMA') }}{{ lang('COLON') }}</dt>
-	<dd><span class="karma-profile-score">{{ USER_KARMA }}</span></dd>
+	<dd>
+		<span class="karma-profile-score">{{ USER_KARMA }}</span>
+		{% if S_CAN_MANAGE_KARMA and U_MCP_KARMA_MANAGE %}
+			[ <a href="{{ U_MCP_KARMA_MANAGE }}">{{ lang('VINNY_KARMA_MCP_MANAGE') }}</a> ]
+		{% endif %}
+	</dd>
 {% endif %}

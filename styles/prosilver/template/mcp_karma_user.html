@@ -1,23 +1,27 @@
-<!-- INCLUDE mcp_header.html -->
+{% include 'mcp_header.html' %}
+{% if not definition.INCLUDED_KARMA_CSS %}
+	{% INCLUDECSS '@vinny_karma/karma.css' %}
+	{% DEFINE INCLUDED_KARMA_CSS = true %}
+{% endif %}
 
-<form method="post" id="mcp" action="{U_POST_ACTION}">
+<form method="post" id="mcp" action="{{ U_POST_ACTION }}">
 
-<h2>{L_TITLE}</h2>
+<h2>{{ L_TITLE }}</h2>
 
 <div class="panel">
 	<div class="inner">
 
-	<h3>{USERNAME_FULL}</h3>
+	<h3>{{ USERNAME_FULL }}</h3>
 
 	<div>
 		<div class="column1">
-			<!-- IF AVATAR_IMG --><div>{AVATAR_IMG}</div><!-- ENDIF -->
+			{% if AVATAR_IMG %}<div>{{ AVATAR_IMG }}</div>{% endif %}
 		</div>
 
 		<div class="column2">
 			<dl class="details">
-				<dt>{L_KARMA}{L_COLON}</dt>
-				<dd><strong>{USER_KARMA}</strong></dd>
+				<dt>{{ lang('KARMA') }}{{ lang('COLON') }}</dt>
+				<dd><strong>{{ USER_KARMA }}</strong></dd>
 			</dl>
 		</div>
 	</div>
@@ -27,19 +31,19 @@
 
 <div class="panel">
 	<div class="inner">
-		<h3>{L_VINNY_KARMA_MCP_RESET_ACTIONS}</h3>
-		<p>{L_VINNY_KARMA_MCP_RESET_ACTIONS_EXPLAIN}</p>
+		<h3>{{ lang('VINNY_KARMA_MCP_RESET_ACTIONS') }}</h3>
+		<p>{{ lang('VINNY_KARMA_MCP_RESET_ACTIONS_EXPLAIN') }}</p>
 		<fieldset>
 			<dl>
-				<dt><label>{L_VINNY_KARMA_MCP_RESET_RECEIVED}{L_COLON}</label><br /><span>{L_VINNY_KARMA_MCP_RESET_RECEIVED_EXPLAIN}</span></dt>
+				<dt><label>{{ lang('VINNY_KARMA_MCP_RESET_RECEIVED') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_MCP_RESET_RECEIVED_EXPLAIN') }}</span></dt>
 				<dd>
-					<input type="submit" name="action[reset_received]" value="{L_VINNY_KARMA_MCP_RESET_RECEIVED}" class="button2" />
+					<input type="submit" name="action[reset_received]" value="{{ lang('VINNY_KARMA_MCP_RESET') }}" class="button2" />
 				</dd>
 			</dl>
 			<dl>
-				<dt><label>{L_VINNY_KARMA_MCP_RESET_CAST}{L_COLON}</label><br /><span>{L_VINNY_KARMA_MCP_RESET_CAST_EXPLAIN}</span></dt>
+				<dt><label>{{ lang('VINNY_KARMA_MCP_RESET_CAST') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_MCP_RESET_CAST_EXPLAIN') }}</span></dt>
 				<dd>
-					<input type="submit" name="action[reset_cast]" value="{L_VINNY_KARMA_MCP_RESET_CAST}" class="button2" />
+					<input type="submit" name="action[reset_cast]" value="{{ lang('VINNY_KARMA_MCP_RESET') }}" class="button2" />
 				</dd>
 			</dl>
 		</fieldset>
@@ -49,16 +53,16 @@
 <div class="panel">
 	<div class="inner">
 
-	<h3>{L_VINNY_KARMA_MCP_ADJUST_BALANCE}</h3>
-	<p>{L_VINNY_KARMA_MCP_ADJUST_BALANCE_EXPLAIN}</p>
+	<h3>{{ lang('VINNY_KARMA_MCP_ADJUST_BALANCE') }}</h3>
+	<p>{{ lang('VINNY_KARMA_MCP_ADJUST_BALANCE_EXPLAIN') }}</p>
 
 	<fieldset>
 		<dl>
-			<dt><label for="adjust_amount">{L_VINNY_KARMA_MCP_ADJUST_AMOUNT}{L_COLON}</label><br /><span>{L_VINNY_KARMA_MCP_ADJUST_AMOUNT_EXP}</span></dt>
+			<dt><label for="adjust_amount">{{ lang('VINNY_KARMA_MCP_ADJUST_AMOUNT') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_MCP_ADJUST_AMOUNT_EXP') }}</span></dt>
 			<dd><input name="adjust_amount" id="adjust_amount" type="number" class="inputbox autowidth" /></dd>
 		</dl>
 		<dl>
-			<dt><label for="adjust_reason">{L_VINNY_KARMA_MCP_REASON}{L_COLON}</label><br /><span>{L_VINNY_KARMA_MCP_REASON_EXP}</span></dt>
+			<dt><label for="adjust_reason">{{ lang('VINNY_KARMA_MCP_REASON') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_MCP_REASON_EXP') }}</span></dt>
 			<dd><input name="adjust_reason" id="adjust_reason" type="text" class="inputbox" style="width: 80%;" /></dd>
 		</dl>
 	</fieldset>
@@ -67,85 +71,71 @@
 </div>
 
 <fieldset class="submit-buttons">
-	{S_HIDDEN_FIELDS}
-	<input type="submit" name="action[adjust_balance]" value="{L_SUBMIT}" class="button1" />
-	{S_FORM_TOKEN}
+	{{ S_HIDDEN_FIELDS }}
+	<input type="submit" name="action[adjust_balance]" value="{{ lang('SUBMIT') }}" class="button1" />
+	{{ S_FORM_TOKEN }}
 </fieldset>
 
 <div class="panel">
 	<div class="inner">
 
 	<div class="action-bar bar-top">
-		{L_SEARCH_KEYWORDS}{L_COLON} <input type="search" class="inputbox autowidth" name="keywords" value="{S_KEYWORDS}" />&nbsp;<input type="submit" class="button2" name="filter" value="{L_SEARCH}" />
 		<div class="pagination">
-			{TOTAL_REPORTS}
-			<!-- IF .pagination -->
-				<!-- INCLUDE pagination.html -->
-			<!-- ELSE -->
-				 &bull; {PAGE_NUMBER}
-			<!-- ENDIF -->
+			{{ TOTAL_REPORTS }}
+			{% if loops.pagination|length %}
+				{% include 'pagination.html' %}
+			{% else %}
+				 &bull; {{ PAGE_NUMBER }}
+			{% endif %}
 		</div>
 	</div>
 
 	<table class="table1">
 	<thead>
 	<tr>
-		<th class="name reportby">{L_VINNY_KARMA_MCP_VOTER}</th>
-		<th>{L_VINNY_KARMA_MCP_POST_AUTHOR}</th>
-		<th class="center">{L_VINNY_KARMA_MCP_POST_ID}</th>
-		<th class="center">{L_VINNY_KARMA_MCP_DIRECTION}</th>
-		<th class="center">{L_TIME}</th>
-		<th>{L_MARK}</th>
+		<th class="name">{{ lang('VINNY_KARMA_MCP_VOTER') }}</th>
+		<th class="center">{{ lang('VINNY_KARMA_MCP_POST_AUTHOR') }}</th>
+		<th class="center">{{ lang('VINNY_KARMA_MCP_POST_ID') }}</th>
+		<th class="center">{{ lang('VINNY_KARMA_MCP_DIRECTION') }}</th>
+		<th class="center">{{ lang('TIME') }}</th>
 	</tr>
 	</thead>
 	<tbody>
-	<!-- BEGIN votes -->
-	<!-- IF votes.S_ROW_COUNT is even --><tr class="bg1"><!-- ELSE --><tr class="bg2"><!-- ENDIF -->
-		<td>{votes.VOTER}</td>
-		<td>{votes.AUTHOR}</td>
-		<td class="center"><!-- IF votes.POST_URL --><a href="{votes.POST_URL}">#{votes.POST_ID}</a><!-- ELSE -->#{votes.POST_ID}<!-- ENDIF --></td>
-		<td class="center">
-			<!-- IF votes.DIRECTION == 1 -->
-				<span style="color: green; font-weight: bold;">+1</span>
-			<!-- ELSE -->
-				<span style="color: red; font-weight: bold;">-1</span>
-			<!-- ENDIF -->
-		</td>
-		<td class="center">{votes.DATE}</td>
-		<td class="center" style="width: 5%;"><input type="checkbox" name="markvote[]" id="vote-{votes.VOTE_ID}" value="{votes.VOTE_ID}" /></td>
-	</tr>
-	<!-- BEGINELSE -->
-	<tr>
-		<td class="bg1" colspan="6" align="center"><span class="gen">{L_NO_ENTRIES}</span></td>
-	</tr>
-	<!-- END votes -->
+	{% for votes in loops.votes %}
+		<tr class="{% if votes.S_ROW_COUNT is even %}bg1{% else %}bg2{% endif %}">
+			<td>{{ votes.VOTER|raw }}</td>
+			<td class="center">{{ votes.AUTHOR|raw }}</td>
+			<td class="center">{% if votes.POST_URL %}<a href="{{ votes.POST_URL }}">#{{ votes.POST_ID }} <i class="icon fa-external-link-square fa-fw icon-lightgray icon-md" aria-hidden="true"></i></a>{% else %}#{{ votes.POST_ID }}{% endif %}</td>
+			<td class="center">
+				{% if votes.DIRECTION == 1 %}
+					<span class="karma-direction-plus">+1</span>
+				{% else %}
+					<span class="karma-direction-minus">-1</span>
+				{% endif %}
+			</td>
+			<td class="center">{{ votes.DATE }}</td>
+		</tr>
+	{% else %}
+		<tr>
+			<td class="bg1" colspan="5" align="center"><span class="gen">{{ lang('NO_ENTRIES') }}</span></td>
+		</tr>
+	{% endfor %}
 	</tbody>
 	</table>
 
 	<div class="action-bar bottom">
-		<!-- INCLUDE display_options.html -->
-
 		<div class="pagination">
-			{TOTAL_REPORTS}
-			<!-- IF .pagination -->
-				<!-- INCLUDE pagination.html -->
-			<!-- ELSE -->
-				 &bull; {PAGE_NUMBER}
-			<!-- ENDIF -->
+			{{ TOTAL_REPORTS }}
+			{% if loops.pagination|length %}
+				{% include 'pagination.html' %}
+			{% else %}
+				 &bull; {{ PAGE_NUMBER }}
+			{% endif %}
 		</div>
 	</div>
 
 	</div>
 </div>
-
-<fieldset class="display-actions">
-	<input class="button2" type="submit" name="action[del_all_votes]" value="{L_DELETE_ALL}" />
-	&nbsp;<input class="button1" type="submit" name="action[del_marked_votes]" value="{L_DELETE_MARKED}" />
-</fieldset>
-
-<fieldset class="display-actions">
-	<div><a href="#" onclick="marklist('mcp', 'markvote', true); return false;">{L_MARK_ALL}</a> &bull; <a href="#" onclick="marklist('mcp', 'markvote', false); return false;">{L_UNMARK_ALL}</a></div>
-</fieldset>
 </form>
 
-<!-- INCLUDE mcp_footer.html -->
+{% include 'mcp_footer.html' %}

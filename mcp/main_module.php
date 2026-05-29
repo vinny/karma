@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -123,11 +124,6 @@ class main_module
 					{
 						if (confirm_box(true))
 						{
-							if (!check_form_key('mcp_karma'))
-							{
-								trigger_error('FORM_INVALID', E_USER_WARNING);
-							}
-
 							$db->sql_transaction('begin');
 							try
 							{
@@ -136,20 +132,20 @@ class main_module
 									WHERE post_id IN (
 										SELECT post_id
 										FROM ' . POSTS_TABLE . '
-										WHERE poster_id = ' . $user_id . '
+										WHERE poster_id = ' . (int) $user_id . '
 									)';
 								$db->sql_query($sql);
 
 								// Reset post karma score on their posts
 								$sql = 'UPDATE ' . POSTS_TABLE . '
 									SET post_karma = 0
-									WHERE poster_id = ' . $user_id;
+									WHERE poster_id = ' . (int) $user_id;
 								$db->sql_query($sql);
 
 								// Reset user's own karma score
 								$sql = 'UPDATE ' . USERS_TABLE . '
 									SET user_karma = 0
-									WHERE user_id = ' . $user_id;
+									WHERE user_id = ' . (int) $user_id;
 								$db->sql_query($sql);
 
 								// Run global resync to update everyone's scores based on remaining logs
@@ -157,7 +153,12 @@ class main_module
 								$db->sql_transaction('commit');
 
 								// Log moderation action to Mod Log
-								add_log('mod', 0, 0, 'LOG_MCP_KARMA_RESET_RECEIVED', $userrow['username']);
+								$phpbb_log = $phpbb_container->get('log');
+								$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_RESET_RECEIVED', time(), array(
+									'forum_id' => 0,
+									'topic_id' => 0,
+									$userrow['username']
+								));
 							}
 							catch (\Exception $e)
 							{
@@ -180,24 +181,24 @@ class main_module
 					{
 						if (confirm_box(true))
 						{
-							if (!check_form_key('mcp_karma'))
-							{
-								trigger_error('FORM_INVALID', E_USER_WARNING);
-							}
-
 							$db->sql_transaction('begin');
 							try
 							{
 								// Delete votes cast by this user
 								$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
-									WHERE user_id = ' . $user_id;
+									WHERE user_id = ' . (int) $user_id;
 								$db->sql_query($sql);
 
 								$this->resync($table_prefix);
 								$db->sql_transaction('commit');
 
 								// Log moderation action to Mod Log
-								add_log('mod', 0, 0, 'LOG_MCP_KARMA_RESET_CAST', $userrow['username']);
+								$phpbb_log = $phpbb_container->get('log');
+								$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_RESET_CAST', time(), array(
+									'forum_id' => 0,
+									'topic_id' => 0,
+									$userrow['username']
+								));
 							}
 							catch (\Exception $e)
 							{
@@ -228,18 +229,19 @@ class main_module
 
 						if (confirm_box(true))
 						{
-							if (!check_form_key('mcp_karma'))
-							{
-								trigger_error('FORM_INVALID', E_USER_WARNING);
-							}
-
 							$sql = 'UPDATE ' . USERS_TABLE . '
-								SET user_karma = user_karma + ' . $adjustment . '
-								WHERE user_id = ' . $user_id;
+								SET user_karma = user_karma + ' . (int) $adjustment . '
+								WHERE user_id = ' . (int) $user_id;
 							$db->sql_query($sql);
 
 							// Log moderation action to Mod Log
-							add_log('mod', 0, 0, 'LOG_MCP_KARMA_ADJUST', $userrow['username'] . ($reason ? ' (' . $reason . ')' : ''), $adjustment);
+							$phpbb_log = $phpbb_container->get('log');
+							$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_ADJUST', time(), array(
+								'forum_id' => 0,
+								'topic_id' => 0,
+								$userrow['username'] . ($reason ? ' (' . $reason . ')' : ''),
+								$adjustment
+							));
 
 							meta_refresh(3, $this->u_action);
 							trigger_error(sprintf($user->lang('VINNY_KARMA_MCP_ADJUST_SUCCESS'), $userrow['username'], $adjustment) . '<br /><br />' . sprintf($user->lang['RETURN_PAGE'], '<a href="' . $this->u_action . '">', '</a>'));
@@ -254,78 +256,7 @@ class main_module
 							)));
 						}
 					}
-					else if ($action === 'del_marked_votes' || $action === 'del_all_votes')
-					{
-						$marked = $request->variable('markvote', array(0));
 
-						if ($action === 'del_marked_votes' && (empty($marked) || count($marked) === 1 && $marked[0] === 0))
-						{
-							trigger_error('FORM_INVALID', E_USER_WARNING);
-						}
-
-						if (confirm_box(true))
-						{
-							if (!check_form_key('mcp_karma'))
-							{
-								trigger_error('FORM_INVALID', E_USER_WARNING);
-							}
-
-							$db->sql_transaction('begin');
-							try
-							{
-								$where_clause = '';
-								if ($action === 'del_marked_votes')
-								{
-									$marked_ids = array_filter(array_map('intval', $marked));
-									$where_clause = 'vote_id IN (' . implode(',', $marked_ids) . ')';
-								}
-								else
-								{
-									// Delete ALL votes related to this user (either cast by them OR received by them)
-									$where_clause = 'user_id = ' . $user_id . ' OR post_id IN (SELECT post_id FROM ' . POSTS_TABLE . ' WHERE poster_id = ' . $user_id . ')';
-								}
-
-								// Fetch vote details for logging before deleting
-								$sql = 'SELECT v.vote_id, v.post_id, u1.username as voter_name, u2.username as author_name
-									FROM ' . $table_prefix . 'vinny_karma_votes v
-									LEFT JOIN ' . POSTS_TABLE . ' p ON v.post_id = p.post_id
-									LEFT JOIN ' . USERS_TABLE . ' u1 ON v.user_id = u1.user_id
-									LEFT JOIN ' . USERS_TABLE . ' u2 ON p.poster_id = u2.user_id
-									WHERE ' . $where_clause;
-								$result = $db->sql_query($sql);
-								while ($vote_row = $db->sql_fetchrow($result))
-								{
-									add_log('mod', 0, 0, 'LOG_MCP_KARMA_VOTE_DELETE', $vote_row['voter_name'] ?: $user->lang['GUEST'], $vote_row['author_name'] ?: $user->lang['GUEST'], $vote_row['post_id']);
-								}
-								$db->sql_freeresult($result);
-
-								// Delete votes
-								$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes WHERE ' . $where_clause;
-								$db->sql_query($sql);
-
-								$this->resync($table_prefix);
-								$db->sql_transaction('commit');
-							}
-							catch (\Exception $e)
-							{
-								$db->sql_transaction('rollback');
-								trigger_error($e->getMessage() . adm_back_link($this->u_action), E_USER_WARNING);
-							}
-
-							meta_refresh(3, $this->u_action);
-							$success_msg = ($action === 'del_marked_votes') ? $user->lang('VINNY_KARMA_MCP_VOTES_DELETED_SUCCESS', count($marked)) : $user->lang('VINNY_KARMA_MCP_ALL_VOTES_DELETED_SUCCESS');
-							trigger_error($success_msg . '<br /><br />' . sprintf($user->lang['RETURN_PAGE'], '<a href="' . $this->u_action . '">', '</a>'));
-						}
-						else
-						{
-							$confirm_msg = ($action === 'del_marked_votes') ? $user->lang['VINNY_KARMA_MCP_VOTE_CONFIRM_DELETE'] : $user->lang['VINNY_KARMA_MCP_VOTE_CONFIRM_DELETE_ALL'];
-							confirm_box(false, $confirm_msg, build_hidden_fields(array(
-								'action[' . $action . ']'	=> 1,
-								'markvote'					=> $marked,
-								'u'							=> $user_id,
-							)));
-						}
-					}
 				}
 
 				if (!function_exists('phpbb_get_user_avatar'))
@@ -334,50 +265,8 @@ class main_module
 				}
 				$avatar_img = phpbb_get_user_avatar($userrow);
 
-				$keywords = $request->variable('keywords', '', true);
-				$keywords_param = !empty($keywords) ? '&amp;keywords=' . urlencode(html_entity_decode($keywords, ENT_COMPAT)) : '';
-
 				// Build query filter
-				$where = array();
-				$where[] = '(v.user_id = ' . $user_id . ' OR p.poster_id = ' . $user_id . ')';
-
-				if ($keywords !== '')
-				{
-					// Try to search by voter name, author name, or post ID
-					$keywords_clean = utf8_clean_string($keywords);
-					
-					// Find user IDs matching keyword
-					$sql = 'SELECT user_id FROM ' . USERS_TABLE . " WHERE username_clean LIKE '%" . $db->sql_escape($keywords_clean) . "%'";
-					$res = $db->sql_query($sql);
-					$user_ids = array();
-					while ($row = $db->sql_fetchrow($res))
-					{
-						$user_ids[] = (int) $row['user_id'];
-					}
-					$db->sql_freeresult($res);
-
-					$keyword_conditions = array();
-					if (!empty($user_ids))
-					{
-						$keyword_conditions[] = 'v.user_id IN (' . implode(',', $user_ids) . ')';
-						$keyword_conditions[] = 'p.poster_id IN (' . implode(',', $user_ids) . ')';
-					}
-					if (is_numeric($keywords))
-					{
-						$keyword_conditions[] = 'v.post_id = ' . (int) $keywords;
-					}
-					
-					if (!empty($keyword_conditions))
-					{
-						$where[] = '(' . implode(' OR ', $keyword_conditions) . ')';
-					}
-					else
-					{
-						$where[] = '1 = 0'; // No matches
-					}
-				}
-
-				$where_sql = ' WHERE ' . implode(' AND ', $where);
+				$where_sql = ' WHERE (v.user_id = ' . (int) $user_id . ' OR p.poster_id = ' . (int) $user_id . ')';
 
 				// Count total votes matching the criteria
 				$sql = 'SELECT COUNT(v.vote_id) as total_votes
@@ -427,13 +316,12 @@ class main_module
 				$db->sql_freeresult($result);
 
 				// Generate Pagination
-				$base_url = $this->u_action . $keywords_param;
+				$base_url = $this->u_action;
 				$pagination = $phpbb_container->get('pagination');
 				$pagination->generate_template_pagination($base_url, 'pagination', 'start', $total_votes, $limit, $start);
 
 				$template->assign_vars(array(
 					'U_POST_ACTION'			=> $this->u_action,
-					'S_KEYWORDS'			=> $keywords,
 
 					'L_TITLE'			=> $user->lang['MCP_KARMA_USER_DETAILS'],
 

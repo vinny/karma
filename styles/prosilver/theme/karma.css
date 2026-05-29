@@ -1,4 +1,4 @@
-/* phpBB Karma Extension Styling */
+/* Karma System extension for the phpBB Forum Software package */
 
 .karma-panel {
 	float: right;
@@ -101,4 +101,35 @@
 	height: 32px;
 	object-fit: cover;
 	vertical-align: middle;
+}
+
+.rank-gold {
+	color: #D4AF37;
+	font-size: 1.3em;
+}
+
+.rank-silver {
+	color: #C0C0C0;
+	font-size: 1.3em;
+}
+
+.rank-bronze {
+	color: #CD7F32;
+	font-size: 1.3em;
+}
+
+.karma-rank-score-total {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+
+/* MCP up/down */
+.karma-direction-plus {
+	color: green;
+	font-weight: bold;
+}
+
+.karma-direction-minus {
+	color: red;
+	font-weight: bold;
 }

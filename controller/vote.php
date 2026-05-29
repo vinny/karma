@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -37,6 +38,9 @@ class vote
 	/** @var \phpbb\config\config */
 	protected $config;
 
+	/** @var \phpbb\log\log */
+	protected $log;
+
 	/** @var string */
 	protected $root_path;
 
@@ -68,6 +72,7 @@ class vote
 		\phpbb\user $user,
 		\phpbb\notification\manager $notification_manager,
 		\phpbb\config\config $config,
+		\phpbb\log\log $log,
 		$root_path,
 		$php_ext,
 		$table_prefix
@@ -79,6 +84,7 @@ class vote
 		$this->user = $user;
 		$this->notification_manager = $notification_manager;
 		$this->config = $config;
+		$this->log = $log;
 		$this->root_path = $root_path;
 		$this->php_ext = $php_ext;
 		$this->table_prefix = $table_prefix;
@@ -194,7 +200,7 @@ class vote
 		{
 			$sql = 'SELECT MAX(vote_time) as last_vote_time
 				FROM ' . $this->table_prefix . 'vinny_karma_votes
-				WHERE user_id = ' . $user_id;
+				WHERE user_id = ' . (int) $user_id;
 			$result = $this->db->sql_query($sql);
 			$last_vote_row = $this->db->sql_fetchrow($result);
 			$this->db->sql_freeresult($result);
@@ -222,7 +228,7 @@ class vote
 		$sql = 'SELECT vote_id, vote_direction
 			FROM ' . $this->table_prefix . 'vinny_karma_votes
 			WHERE post_id = ' . (int) $post_id . '
-				AND user_id = ' . $user_id;
+				AND user_id = ' . (int) $user_id;
 		$result = $this->db->sql_query($sql);
 		$existing_vote = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -275,8 +281,8 @@ class vote
 			if ($poster_id !== ANONYMOUS)
 			{
 				$sql = 'UPDATE ' . USERS_TABLE . '
-					SET user_karma = user_karma + ' . $karma_diff . '
-					WHERE user_id = ' . $poster_id;
+					SET user_karma = user_karma + ' . (int) $karma_diff . '
+					WHERE user_id = ' . (int) $poster_id;
 				$this->db->sql_query($sql);
 			}
 
@@ -284,7 +290,7 @@ class vote
 			if ($db_action === 'delete')
 			{
 				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
-					WHERE vote_id = ' . $existing_vote_id;
+					WHERE vote_id = ' . (int) $existing_vote_id;
 				$this->db->sql_query($sql);
 			}
 			else
@@ -336,7 +342,7 @@ class vote
 		$updated_user_karma = 0;
 		if ($poster_id !== ANONYMOUS)
 		{
-			$sql = 'SELECT user_karma FROM ' . USERS_TABLE . ' WHERE user_id = ' . $poster_id;
+			$sql = 'SELECT user_karma FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $poster_id;
 			$result = $this->db->sql_query($sql);
 			$updated_user = $this->db->sql_fetchrow($result);
 			$this->db->sql_freeresult($result);
@@ -377,7 +383,7 @@ class vote
 		// 3. Fetch Post and Author Details
 		$sql = 'SELECT poster_id, topic_id
 			FROM ' . POSTS_TABLE . '
-			WHERE post_id = ' . $post_id;
+			WHERE post_id = ' . (int) $post_id;
 		$result = $this->db->sql_query($sql);
 		$post = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -392,6 +398,11 @@ class vote
 
 		$redirect_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . $post_id . '#p' . $post_id);
 
+		if ($this->request->is_set_post('cancel'))
+		{
+			return new \Symfony\Component\HttpFoundation\RedirectResponse($redirect_url);
+		}
+
 		// If user clicked "Confirm", delete
 		if (confirm_box(true))
 		{
@@ -400,13 +411,13 @@ class vote
 			{
 				// Delete all votes for this post
 				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
-					WHERE post_id = ' . $post_id;
+					WHERE post_id = ' . (int) $post_id;
 				$this->db->sql_query($sql);
 
 				// Reset post karma
 				$sql = 'UPDATE ' . POSTS_TABLE . '
 					SET post_karma = 0
-					WHERE post_id = ' . $post_id;
+					WHERE post_id = ' . (int) $post_id;
 				$this->db->sql_query($sql);
 
 				// Recalculate poster total karma (re-sync)
@@ -418,7 +429,7 @@ class vote
 							FROM ' . POSTS_TABLE . ' p
 							WHERE p.poster_id = u.user_id
 						)
-						WHERE u.user_id = ' . $poster_id;
+						WHERE u.user_id = ' . (int) $poster_id;
 					$this->db->sql_query($sql);
 				}
 
@@ -428,14 +439,19 @@ class vote
 				$poster_name = $this->user->lang['GUEST'];
 				if ($poster_id !== ANONYMOUS)
 				{
-					$sql = 'SELECT username FROM ' . USERS_TABLE . ' WHERE user_id = ' . $poster_id;
+					$sql = 'SELECT username FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $poster_id;
 					$res = $this->db->sql_query($sql);
 					$poster_name = (string) $this->db->sql_fetchfield('username');
 					$this->db->sql_freeresult($res);
 				}
 
 				// Log to moderator logs
-				add_log('mod', 0, 0, 'LOG_MCP_KARMA_RESET_POST', $post_id, $poster_name);
+				$this->log->add('mod', $this->user->data['user_id'], $this->user->ip, 'LOG_MCP_KARMA_RESET_POST', time(), array(
+					'forum_id' => 0,
+					'topic_id' => 0,
+					$post_id,
+					$poster_name
+				));
 			}
 			catch (\Exception $e)
 			{

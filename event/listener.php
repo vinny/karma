@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -174,6 +175,11 @@ class listener implements EventSubscriberInterface
 			$this->template->assign_vars(array(
 				'S_SHOW_KARMA' => $can_view,
 				'S_KARMA_ENABLE_DOWNVOTE' => isset($this->config['vinny_karma_enable_downvote']) ? (bool) $this->config['vinny_karma_enable_downvote'] : true,
+				'L_KARMA_UPVOTE' => $this->user->lang('KARMA_UPVOTE'),
+				'L_KARMA_DOWNVOTE' => $this->user->lang('KARMA_DOWNVOTE'),
+				'L_KARMA_ALREADY_VOTED_UP' => $this->user->lang('KARMA_ALREADY_VOTED_UP'),
+				'L_KARMA_ALREADY_VOTED_DOWN' => $this->user->lang('KARMA_ALREADY_VOTED_DOWN'),
+				'L_KARMA_ERROR_VOTE_FAILED' => $this->user->lang('KARMA_ERROR_VOTE_FAILED'),
 			));
 			$global_assigned = true;
 		}
@@ -195,7 +201,7 @@ class listener implements EventSubscriberInterface
 						AND post_id IN (
 							SELECT post_id
 							FROM ' . POSTS_TABLE . '
-							WHERE topic_id = ' . $topic_id . '
+							WHERE topic_id = ' . (int) $topic_id . '
 						)';
 				$result = $this->db->sql_query($sql);
 				while ($vote = $this->db->sql_fetchrow($result))
@@ -243,16 +249,19 @@ class listener implements EventSubscriberInterface
 
 		$sql = 'SELECT user_karma
 			FROM ' . USERS_TABLE . '
-			WHERE user_id = ' . $user_id;
+			WHERE user_id = ' . (int) $user_id;
 		$result = $this->db->sql_query($sql);
 		$user_karma = (int) $this->db->sql_fetchfield('user_karma');
 		$this->db->sql_freeresult($result);
 
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
 		$can_view = $enabled && $this->auth->acl_get('u_karma_view');
+		$can_manage = $enabled && $this->auth->acl_get('m_karma_manage');
 
 		$template_ary['USER_KARMA'] = $user_karma;
 		$template_ary['S_SHOW_KARMA'] = $can_view;
+		$template_ary['S_CAN_MANAGE_KARMA'] = $can_manage;
+		$template_ary['U_MCP_KARMA_MANAGE'] = $can_manage ? append_sid($this->root_path . 'mcp.' . $this->php_ext, 'i=-vinny-karma-mcp-main_module&amp;mode=karma_user_details&amp;u=' . $user_id) : '';
 
 		$event['template_ary'] = $template_ary;
 	}

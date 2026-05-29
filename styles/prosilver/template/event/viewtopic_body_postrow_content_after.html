@@ -1,28 +1,8 @@
 {% if postrow.S_KARMA_VIEW %}
-	<div class="karma-panel{% if postrow.S_VOTED_UP %} voted-up{% elseif postrow.S_VOTED_DOWN %} voted-down{% endif %}{% if not postrow.S_KARMA_VOTE %} karma-disabled{% endif %}"
-		data-upvote-url="{{ postrow.U_UPVOTE_API|e('html_attr') }}"
-		data-downvote-url="{{ postrow.U_DOWNVOTE_API|e('html_attr') }}"
-		data-lang-upvote="{{ lang('KARMA_UPVOTE')|e('html_attr') }}"
-		data-lang-downvote="{{ lang('KARMA_DOWNVOTE')|e('html_attr') }}"
-		data-lang-already-up="{{ lang('KARMA_ALREADY_VOTED_UP')|e('html_attr') }}"
-		data-lang-already-down="{{ lang('KARMA_ALREADY_VOTED_DOWN')|e('html_attr') }}"
-		data-lang-error-title="{{ lang('KARMA')|e('html_attr') }}"
-		data-lang-error-message="{{ lang('KARMA_ERROR_VOTE_FAILED')|e('html_attr') }}">
-		{% if postrow.S_KARMA_VOTE %}
-			<a {% if postrow.S_VOTED_UP %}href="javascript:void(0);" class="button button-icon-only karma-vote-btn karma-upvote karma-btn-blocked" title="{{ lang('KARMA_ALREADY_VOTED_UP')|e('html_attr') }}"{% else %}href="{{ postrow.U_UPVOTE_API }}" data-ajax="vinny_karma_vote" class="button button-icon-only karma-vote-btn karma-upvote" title="{{ lang('KARMA_UPVOTE')|e('html_attr') }}"{% endif %} data-lang-error="{{ lang('KARMA_ERROR_VOTE_FAILED')|e('html_attr') }}">
-				<i class="icon fa-arrow-up fa-fw" aria-hidden="true"></i>
-			</a>
-		{% else %}
-			<div class="button button-icon-only karma-vote-btn karma-upvote karma-btn-blocked" title="{% if postrow.S_IS_OWN_POST %}{{ lang('KARMA_ERROR_SELF_VOTE')|e('html_attr') }}{% else %}{{ lang('KARMA_ERROR_VOTE_DISABLED')|e('html_attr') }}{% endif %}">
-				<i class="icon fa-arrow-up fa-fw" aria-hidden="true"></i>
-			</div>
-		{% endif %}
-
-		<span class="karma-score">{{ postrow.POST_KARMA }}</span>
-
+	<div class="karma-panel{% if postrow.S_VOTED_UP %} voted-up{% elseif postrow.S_VOTED_DOWN %} voted-down{% endif %}{% if not postrow.S_KARMA_VOTE %} karma-disabled{% endif %}">
 		{% if S_KARMA_ENABLE_DOWNVOTE %}
 			{% if postrow.S_KARMA_VOTE %}
-				<a {% if postrow.S_VOTED_DOWN %}href="javascript:void(0);" class="button button-icon-only karma-vote-btn karma-downvote karma-btn-blocked" title="{{ lang('KARMA_ALREADY_VOTED_DOWN')|e('html_attr') }}"{% else %}href="{{ postrow.U_DOWNVOTE_API }}" data-ajax="vinny_karma_vote" class="button button-icon-only karma-vote-btn karma-downvote" title="{{ lang('KARMA_DOWNVOTE')|e('html_attr') }}"{% endif %} data-lang-error="{{ lang('KARMA_ERROR_VOTE_FAILED')|e('html_attr') }}">
+				<a {% if postrow.S_VOTED_DOWN %}href="javascript:void(0);" class="button button-icon-only karma-vote-btn karma-downvote karma-btn-blocked" title="{{ lang('KARMA_ALREADY_VOTED_DOWN')|e('html_attr') }}"{% else %}href="{{ postrow.U_DOWNVOTE_API }}" data-ajax="vinny_karma_vote" class="button button-icon-only karma-vote-btn karma-downvote" title="{{ lang('KARMA_DOWNVOTE')|e('html_attr') }}"{% endif %} data-vote-url="{{ postrow.U_DOWNVOTE_API }}">
 					<i class="icon fa-arrow-down fa-fw" aria-hidden="true"></i>
 				</a>
 			{% else %}
@@ -31,8 +11,20 @@
 				</div>
 			{% endif %}
 		{% endif %}
+
+		<span class="karma-score">{{ postrow.POST_KARMA }}</span>
+
+		{% if postrow.S_KARMA_VOTE %}
+			<a {% if postrow.S_VOTED_UP %}href="javascript:void(0);" class="button button-icon-only karma-vote-btn karma-upvote karma-btn-blocked" title="{{ lang('KARMA_ALREADY_VOTED_UP')|e('html_attr') }}"{% else %}href="{{ postrow.U_UPVOTE_API }}" data-ajax="vinny_karma_vote" class="button button-icon-only karma-vote-btn karma-upvote" title="{{ lang('KARMA_UPVOTE')|e('html_attr') }}"{% endif %} data-vote-url="{{ postrow.U_UPVOTE_API }}">
+				<i class="icon fa-arrow-up fa-fw" aria-hidden="true"></i>
+			</a>
+		{% else %}
+			<div class="button button-icon-only karma-vote-btn karma-upvote karma-btn-blocked" title="{% if postrow.S_IS_OWN_POST %}{{ lang('KARMA_ERROR_SELF_VOTE')|e('html_attr') }}{% else %}{{ lang('KARMA_ERROR_VOTE_DISABLED')|e('html_attr') }}{% endif %}">
+				<i class="icon fa-arrow-up fa-fw" aria-hidden="true"></i>
+			</div>
+		{% endif %}
 		{% if postrow.S_CAN_MANAGE_KARMA %}
-			<a href="{{ postrow.U_RESET_POST_KARMA }}" class="button button-icon-only" title="{{ lang('VINNY_KARMA_MCP_RESET_POST_CONFIRM')|e('html_attr') }}" style="margin-left: 5px; border-color: #f1b0b0; background-color: #fff0f0;">
+			<a href="{{ postrow.U_RESET_POST_KARMA }}" class="button button-icon-only karma-reset-btn" title="{{ lang('KARMA_SCORE_RESET')|e('html_attr') }}"{% if postrow.POST_KARMA == 0 %} style="display: none;"{% endif %}>
 				<i class="icon fa-eraser fa-fw" aria-hidden="true" style="color: #d04040;"></i>
 			</a>
 		{% endif %}

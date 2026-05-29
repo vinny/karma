@@ -1,3 +1,5 @@
+// Karma System extension for the phpBB Forum Software package.
+
 (function($) {
 	'use strict';
 
@@ -27,17 +29,28 @@
 			// Update karma score text
 			$panel.find('.karma-score').text(res.post_karma);
 
+			// Show/hide reset button based on the updated score
+			var $resetBtn = $panel.find('.karma-reset-btn');
+			if ($resetBtn.length) {
+				if (res.post_karma === 0) {
+					$resetBtn.hide();
+				} else {
+					$resetBtn.show();
+				}
+			}
+
 			// Reset voted classes and apply the new state
 			$panel.removeClass('voted-up voted-down');
 
+			var $config = $('#karma-config');
 			var $upvoteBtn = $panel.find('.karma-upvote');
 			var $downvoteBtn = $panel.find('.karma-downvote');
-			var upvoteUrl = $panel.attr('data-upvote-url');
-			var downvoteUrl = $panel.attr('data-downvote-url');
-			var langUp = $panel.attr('data-lang-upvote');
-			var langDown = $panel.attr('data-lang-downvote');
-			var langAlreadyUp = $panel.attr('data-lang-already-up');
-			var langAlreadyDown = $panel.attr('data-lang-already-down');
+			var upvoteUrl = $upvoteBtn.attr('data-vote-url');
+			var downvoteUrl = $downvoteBtn.attr('data-vote-url');
+			var langUp = $config.attr('data-lang-upvote');
+			var langDown = $config.attr('data-lang-downvote');
+			var langAlreadyUp = $config.attr('data-lang-already-up');
+			var langAlreadyDown = $config.attr('data-lang-already-down');
 
 			if (res.vote_direction === 1) {
 				$panel.addClass('voted-up');
@@ -99,10 +112,10 @@
 			}
 		} else {
 			// Get fallback language strings from data attributes
-			var $panel = $(this).closest('.karma-panel');
+			var $config = $('#karma-config');
 			var errorLang = $(this).attr('data-lang-error');
-			var errorMsg = res.message || errorLang || $panel.attr('data-lang-error-message') || '';
-			var errorTitle = res.title || $panel.attr('data-lang-error-title') || '';
+			var errorMsg = res.message || errorLang || $config.attr('data-lang-error-message') || '';
+			var errorTitle = res.title || $config.attr('data-lang-error-title') || '';
 			phpbb.alert(errorTitle, errorMsg);
 		}
 	});

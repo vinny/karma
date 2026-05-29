@@ -1,4 +1,12 @@
 {% if SCRIPT_NAME == 'viewtopic' and S_SHOW_KARMA %}
+	<div id="karma-config" style="display: none;"
+		data-lang-upvote="{{ L_KARMA_UPVOTE|e('html_attr') }}"
+		data-lang-downvote="{{ L_KARMA_DOWNVOTE|e('html_attr') }}"
+		data-lang-already-up="{{ L_KARMA_ALREADY_VOTED_UP|e('html_attr') }}"
+		data-lang-already-down="{{ L_KARMA_ALREADY_VOTED_DOWN|e('html_attr') }}"
+		data-lang-error-title="{{ lang('KARMA')|e('html_attr') }}"
+		data-lang-error-message="{{ L_KARMA_ERROR_VOTE_FAILED|e('html_attr') }}"></div>
+
 	{% INCLUDEJS '@vinny_karma/karma.js' %}
 	{% if not definition.INCLUDED_KARMA_CSS %}
 		{% INCLUDECSS '@vinny_karma/karma.css' %}

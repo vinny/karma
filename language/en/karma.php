@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -48,6 +49,12 @@ $lang = array_merge($lang, array(
 	'KARMA_RANK_SILVER'				=> '2nd Place',
 	'KARMA_RANK_BRONZE'				=> '3rd Place',
 	'KARMA_RANK_EMPTY'				=> 'No users found',
+
+	// Mod actions
+	'KARMA_SCORE_RESET'						=> 'Reset karma score',
+	'VINNY_KARMA_MCP_RESET_POST_CONFIRM'	=> 'Are you sure you want to reset the karma score of this post back to 0?',
+	'VINNY_KARMA_MCP_RESET_POST_SUCCESS'	=> 'Successfully reset karma score for post #%d.',
+	'VINNY_KARMA_MCP_MANAGE'				=> 'Manage',
 ));
 
 // Report Reasons

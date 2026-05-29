@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -29,6 +30,7 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MCP_AUTHOR_STATS'		=> 'Votes Received (Author Stats)',
 	'VINNY_KARMA_MCP_UPVOTES'			=> 'Upvotes',
 	'VINNY_KARMA_MCP_DOWNVOTES'			=> 'Downvotes',
+	'VINNY_KARMA_MCP_RESET'				=> 'Reset',
 	'VINNY_KARMA_MCP_RESET_RECEIVED'	=> 'Reset Received Karma',
 	'VINNY_KARMA_MCP_RESET_CAST'		=> 'Reset Cast Karma',
 	'VINNY_KARMA_MCP_RESET_ACTIONS'			=> 'Reset Actions',
@@ -54,22 +56,10 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MCP_RESET_RECEIVED_SUCCESS'	=> 'Successfully reset all received karma for %s.',
 	'VINNY_KARMA_MCP_RESET_CAST_SUCCESS'		=> 'Successfully reset all cast karma for %s.',
 	'VINNY_KARMA_MCP_ADJUST_SUCCESS'			=> 'Successfully adjusted karma balance for %s by %d points.',
-	'VINNY_KARMA_MCP_VOTES_DELETED_SUCCESS'		=> 'Successfully deleted %d vote(s).',
-	'VINNY_KARMA_MCP_ALL_VOTES_DELETED_SUCCESS'	=> 'Successfully deleted all votes associated with this user.',
-	'VINNY_KARMA_MCP_VOTE_CONFIRM_DELETE'		=> 'Are you sure you want to delete the selected votes?',
-	'VINNY_KARMA_MCP_VOTE_CONFIRM_DELETE_ALL'	=> 'Are you sure you want to delete all votes associated with this user?',
-
-	'VINNY_KARMA_MCP_FILTER_VOTER'		=> 'Filter by Voter Username',
-	'VINNY_KARMA_MCP_FILTER_AUTHOR'		=> 'Filter by Post Author',
-	'VINNY_KARMA_MCP_FILTER_POST'		=> 'Filter by Post ID',
-
-	'VINNY_KARMA_MCP_RESET_POST_CONFIRM'		=> 'Are you sure you want to reset the karma score of this post back to 0?',
-	'VINNY_KARMA_MCP_RESET_POST_SUCCESS'		=> 'Successfully reset karma score for post #%d.',
 
 	// Moderator logs
 	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Reset user received karma</strong><br />» %s',
 	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Reset user cast votes</strong><br />» %s',
 	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Adjusted user karma score</strong><br />» %s (Adjustment: %d)',
-	'LOG_MCP_KARMA_VOTE_DELETE'			=> '<strong>Deleted karma vote</strong><br />» Voter: %s, Author: %s, Post: #%d',
 	'LOG_MCP_KARMA_RESET_POST'			=> '<strong>Reset post karma score</strong><br />» Post: #%d, Author: %s',
 ));

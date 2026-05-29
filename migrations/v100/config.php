@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -43,6 +44,9 @@ class config extends \phpbb\db\migration\migration
 	{
 		return array(
 			array('config.add', array('vinny_karma_enabled', 1)),
+			array('config.add', array('vinny_karma_enable_downvote', 1)),
+			array('config.add', array('vinny_karma_flood_interval', 10)),
+			array('config.add', array('vinny_karma_excluded_forums', '')),
 		);
 	}
 
@@ -55,6 +59,9 @@ class config extends \phpbb\db\migration\migration
 	{
 		return array(
 			array('config.remove', array('vinny_karma_enabled')),
+			array('config.remove', array('vinny_karma_enable_downvote')),
+			array('config.remove', array('vinny_karma_flood_interval')),
+			array('config.remove', array('vinny_karma_excluded_forums')),
 		);
 	}
 }

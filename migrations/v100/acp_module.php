@@ -1,9 +1,10 @@
 <?php
 /**
 *
-* @package karma
-* @copyright (c) 2026 Vinny
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* Karma System extension for the phpBB Forum Software package.
+*
+* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
 
@@ -31,7 +32,14 @@ class acp_module extends \phpbb\db\migration\migration
 	*/
 	public function effectively_installed()
 	{
-		return isset($this->config['vinny_karma_enable_downvote']);
+		$sql = 'SELECT module_id
+			FROM ' . MODULES_TABLE . "
+			WHERE module_langname = 'ACP_VINNY_KARMA'";
+		$result = $this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		return (bool) $row;
 	}
 
 	/**
@@ -42,10 +50,6 @@ class acp_module extends \phpbb\db\migration\migration
 	public function update_data()
 	{
 		return array(
-			array('config.add', array('vinny_karma_enable_downvote', 1)),
-			array('config.add', array('vinny_karma_flood_interval', 10)),
-			array('config.add', array('vinny_karma_excluded_forums', '')),
-
 			// Add main module category under extensions tab
 			array('module.add', array(
 				'acp',
@@ -73,10 +77,6 @@ class acp_module extends \phpbb\db\migration\migration
 	public function revert_data()
 	{
 		return array(
-			array('config.remove', array('vinny_karma_enable_downvote')),
-			array('config.remove', array('vinny_karma_flood_interval')),
-			array('config.remove', array('vinny_karma_excluded_forums')),
-
 			array('module.remove', array(
 				'acp',
 				'ACP_VINNY_KARMA',
