@@ -75,7 +75,8 @@ class listener implements EventSubscriberInterface
 		$root_path,
 		$php_ext,
 		$table_prefix
-	) {
+	)
+	{
 		$this->auth = $auth;
 		$this->helper = $helper;
 		$this->db = $db;

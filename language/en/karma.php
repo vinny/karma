@@ -60,4 +60,3 @@ $lang = array_merge($lang, array(
 // Report Reasons
 $lang['report_reasons']['TITLE']['ABUSE_KARMA'] = 'Vote Abuse';
 $lang['report_reasons']['DESCRIPTION']['ABUSE_KARMA'] = 'Manipulating votes or targeting users (targeted upvoting or downvoting).';
-

@@ -12,11 +12,6 @@ namespace vinny\karma\controller;
 
 use Symfony\Component\HttpFoundation\Response;
 
-if (!defined('IN_PHPBB'))
-{
-	exit;
-}
-
 /**
 * phpBB Karma Extension Ranking Controller
 */
@@ -82,7 +77,8 @@ class ranking
 		$root_path,
 		$php_ext,
 		$table_prefix
-	) {
+	)
+	{
 		$this->auth = $auth;
 		$this->helper = $helper;
 		$this->db = $db;
