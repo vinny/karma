@@ -20,6 +20,6 @@ class ranking_test extends \phpbb_functional_test_case
 	public function test_ranking_page()
 	{
 		$crawler = $this->request('GET', 'app.php/karma/ranking');
-		$this->assertStringContainsString('Karma Ranking', $this->get_contents());
+		$this->assertStringContainsString('Karma Ranking', $crawler->text());
 	}
 }

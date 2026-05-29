@@ -12,7 +12,6 @@ namespace vinny\karma\tests\migrations;
 
 class database_test extends \phpbb_database_test_case
 {
-	protected $db_tools;
 	protected $table_prefix;
 
 	static protected function setup_extensions()
@@ -31,9 +30,6 @@ class database_test extends \phpbb_database_test_case
 
 		global $table_prefix;
 		$this->table_prefix = $table_prefix;
-
-		$db = $this->new_dbal();
-		$this->db_tools = new \phpbb\db\tools\tools($db);
 	}
 
 	public function test_karma_votes_table_exists()
