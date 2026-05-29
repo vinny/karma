@@ -45,10 +45,10 @@ class schema extends \phpbb\db\migration\migration
 		return array(
 			'add_columns' => array(
 				$this->table_prefix . 'posts' => array(
-					'post_karma' => array('INT:11', 0),
+					'post_karma' => array('INT', 0),
 				),
 				$this->table_prefix . 'users' => array(
-					'user_karma' => array('INT:11', 0),
+					'user_karma' => array('INT', 0),
 				),
 			),
 		);

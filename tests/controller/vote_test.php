@@ -56,6 +56,9 @@ class vote_test extends \phpbb_test_case
 			'php',
 			'phpbb_'
 		);
+
+		global $user;
+		$user = $this->user;
 	}
 
 	public function test_handle_vote_not_logged_in()
@@ -83,7 +86,8 @@ class vote_test extends \phpbb_test_case
 	{
 		$this->user->data = array(
 			'is_registered' => true,
-			'user_id' => 2
+			'user_id' => 2,
+			'user_form_salt' => 'some_salt',
 		);
 
 		$this->user->expects($this->any())
