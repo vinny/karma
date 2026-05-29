@@ -1,0 +1,55 @@
+services:
+    vinny.karma.listener:
+        class: vinny\karma\event\listener
+        arguments:
+            - '@auth'
+            - '@controller.helper'
+            - '@dbal.conn'
+            - '@request'
+            - '@template'
+            - '@user'
+            - '@config'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+            - '%core.table_prefix%'
+        tags:
+            - { name: event.listener }
+
+    vinny.karma.controller.vote:
+        class: vinny\karma\controller\vote
+        arguments:
+            - '@auth'
+            - '@controller.helper'
+            - '@dbal.conn'
+            - '@request'
+            - '@user'
+            - '@notification_manager'
+            - '@config'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+            - '%core.table_prefix%'
+
+    vinny.karma.controller.ranking:
+        class: vinny\karma\controller\ranking
+        arguments:
+            - '@auth'
+            - '@controller.helper'
+            - '@dbal.conn'
+            - '@request'
+            - '@template'
+            - '@user'
+            - '@pagination'
+            - '@config'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+            - '%core.table_prefix%'
+
+    vinny.karma.notification.type.karma_vote:
+        class: vinny\karma\notification\type\karma_vote
+        shared: false
+        parent: notification.type.base
+        tags:
+            - { name: notification.type }
+        calls:
+            - ['set_helper', ['@controller.helper']]
+            - ['set_user_loader', ['@user_loader']]

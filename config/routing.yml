@@ -1,0 +1,19 @@
+vinny_karma_vote_api:
+    path: /karma/vote/{post_id}/{type}
+    defaults:
+        _controller: vinny.karma.controller.vote:handle_vote
+    requirements:
+        post_id: \d+
+        type: up|down
+
+vinny_karma_ranking:
+    path: /karma/ranking
+    defaults:
+        _controller: vinny.karma.controller.ranking:display
+
+vinny_karma_reset_post:
+    path: /karma/reset_post/{post_id}
+    defaults:
+        _controller: vinny.karma.controller.vote:reset_post_karma
+    requirements:
+        post_id: \d+

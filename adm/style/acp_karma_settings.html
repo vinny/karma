@@ -1,0 +1,44 @@
+{% INCLUDE 'overall_header.html' %}
+
+<a id="maincontent"></a>
+
+<h1>{{ lang('VINNY_KARMA_SETTINGS_TITLE') }}</h1>
+
+<p>{{ lang('VINNY_KARMA_SETTINGS_EXPLAIN') }}</p>
+
+<form id="acp_karma_settings" method="post" action="{{ U_ACTION }}">
+	<fieldset>
+		<legend>{{ lang('GENERAL_OPTIONS') }}</legend>
+		<dl>
+			<dt><label for="vinny_karma_enabled">{{ lang('VINNY_KARMA_ENABLED') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_ENABLED_EXPLAIN') }}</span></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="vinny_karma_enabled" value="1" {% if VINNY_KARMA_ENABLED %}checked="checked"{% endif %} /> {{ lang('YES') }}</label>
+				<label><input type="radio" class="radio" name="vinny_karma_enabled" value="0" {% if not VINNY_KARMA_ENABLED %}checked="checked"{% endif %} /> {{ lang('NO') }}</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="vinny_karma_enable_downvote">{{ lang('VINNY_KARMA_ENABLE_DOWNVOTE') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_ENABLE_DOWNVOTE_EXPLAIN') }}</span></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="vinny_karma_enable_downvote" value="1" {% if VINNY_KARMA_ENABLE_DOWNVOTE %}checked="checked"{% endif %} /> {{ lang('YES') }}</label>
+				<label><input type="radio" class="radio" name="vinny_karma_enable_downvote" value="0" {% if not VINNY_KARMA_ENABLE_DOWNVOTE %}checked="checked"{% endif %} /> {{ lang('NO') }}</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="vinny_karma_flood_interval">{{ lang('VINNY_KARMA_FLOOD_INTERVAL') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_FLOOD_INTERVAL_EXPLAIN') }}</span></dt>
+			<dd><input type="number" id="vinny_karma_flood_interval" name="vinny_karma_flood_interval" value="{{ VINNY_KARMA_FLOOD_INTERVAL }}" min="0" max="9999" /></dd>
+		</dl>
+		<dl>
+			<dt><label for="vinny_karma_excluded_forums">{{ lang('VINNY_KARMA_EXCLUDED_FORUMS') }}{{ lang('COLON') }}</label><br /><span>{{ lang('VINNY_KARMA_EXCLUDED_FORUMS_EXPLAIN') }}</span></dt>
+			<dd><select id="vinny_karma_excluded_forums" name="vinny_karma_excluded_forums[]" multiple="multiple" size="10">{{ S_FORUM_OPTIONS }}</select></dd>
+		</dl>
+
+	</fieldset>
+
+	<fieldset class="submit-buttons">
+		<input class="button1" type="submit" id="submit" name="submit" value="{{ lang('SUBMIT') }}" />&nbsp;
+		<input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}" />
+		{{ S_FORM_TOKEN }}
+	</fieldset>
+</form>
+
+{% INCLUDE 'overall_footer.html' %}

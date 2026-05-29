@@ -1,0 +1,101 @@
+{% INCLUDE 'overall_header.html' %}
+
+<a id="maincontent"></a>
+
+<h1>{{ lang('VINNY_KARMA_MAINTENANCE_TITLE') }}</h1>
+
+<p>{{ lang('VINNY_KARMA_MAINTENANCE_EXPLAIN') }}</p>
+
+<fieldset>
+	<legend>{{ lang('VINNY_KARMA_MAINTENANCE_TITLE') }}</legend>
+
+	<form id="acp_karma_resync" method="post" action="{{ U_ACTION }}">
+		<dl>
+			<dt><label for="submit_resync">{{ lang('VINNY_KARMA_RESYNC') }}</label><br /><span>{{ lang('VINNY_KARMA_RESYNC_EXPLAIN') }}</span></dt>
+			<dd>
+				<input class="button2" type="submit" id="submit_resync" name="submit_resync" value="{{ lang('RUN') }}" />
+			</dd>
+		</dl>
+		{{ S_FORM_TOKEN }}
+	</form>
+
+	<form id="acp_karma_reset_user" name="acp_karma_reset_user" method="post" action="{{ U_ACTION }}">
+		<dl>
+			<dt><label for="username">{{ lang('VINNY_KARMA_RESET_USER') }}</label><br /><span>{{ lang('VINNY_KARMA_RESET_USER_EXPLAIN') }}</span></dt>
+			<dd>
+				<input type="text" id="username" name="username" placeholder="{{ lang('USERNAME') }}" />&nbsp;
+				[ <a href="{{ U_FIND_USERNAME }}" onclick="find_username(this.href); return false;">{{ lang('FIND_USERNAME') }}</a> ]&nbsp;
+				<input class="button2" type="submit" id="submit_reset_user" name="submit_reset_user" value="{{ lang('RUN') }}" />
+			</dd>
+		</dl>
+		{{ S_FORM_TOKEN }}
+	</form>
+
+	<form id="acp_karma_prune" method="post" action="{{ U_ACTION }}">
+		<dl>
+			<dt><label for="prune_days">{{ lang('VINNY_KARMA_PRUNE') }}</label><br /><span>{{ lang('VINNY_KARMA_PRUNE_EXPLAIN') }}</span></dt>
+			<dd>
+				<input type="number" id="prune_days" name="prune_days" value="30" min="1" max="9999" />&nbsp;
+				<input class="button2" type="submit" id="submit_prune" name="submit_prune" value="{{ lang('RUN') }}" />
+			</dd>
+		</dl>
+		{{ S_FORM_TOKEN }}
+	</form>
+</fieldset>
+
+<h2>{{ lang('VINNY_KARMA_AUDIT_LOG') }}</h2>
+
+{% if loops.votes|length %}
+	<div class="action-bar top">
+		<div class="pagination">
+			{% INCLUDE 'pagination.html' %}
+		</div>
+	</div>
+
+	<table class="table1">
+		<thead>
+			<tr>
+				<th>{{ lang('VINNY_KARMA_AUDIT_VOTER') }}</th>
+				<th style="text-align: center;">{{ lang('VINNY_KARMA_AUDIT_DIRECTION') }}</th>
+				<th>{{ lang('VINNY_KARMA_AUDIT_AUTHOR') }}</th>
+				<th>{{ lang('VINNY_KARMA_AUDIT_POST') }}</th>
+				<th>{{ lang('VINNY_KARMA_AUDIT_TIME') }}</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for votes in loops.votes %}
+				<tr>
+					<td>{{ votes.VOTER }}</td>
+					<td style="text-align: center;">
+						{% if votes.DIRECTION == 1 %}
+							<span style="color: green; font-weight: bold;">+1 ({{ lang('VINNY_KARMA_AUDIT_UP') }})</span>
+						{% else %}
+							<span style="color: red; font-weight: bold;">-1 ({{ lang('VINNY_KARMA_AUDIT_DOWN') }})</span>
+						{% endif %}
+					</td>
+					<td>{{ votes.AUTHOR }}</td>
+					<td>
+						{% if votes.POST_URL %}
+							<a href="{{ votes.POST_URL }}">{{ lang('POST') }} #{{ votes.POST_ID }}</a>
+						{% else %}
+							{{ lang('POST') }} #{{ votes.POST_ID }} ({{ lang('DELETED') }})
+						{% endif %}
+					</td>
+					<td>{{ votes.DATE }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="action-bar bottom">
+		<div class="pagination">
+			{% INCLUDE 'pagination.html' %}
+		</div>
+	</div>
+{% else %}
+	<div class="errorbox" style="margin-top: 10px;">
+		<p>{{ lang('VINNY_KARMA_AUDIT_EMPTY') }}</p>
+	</div>
+{% endif %}
+
+{% INCLUDE 'overall_footer.html' %}

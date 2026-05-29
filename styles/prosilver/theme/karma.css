@@ -1,0 +1,104 @@
+/* phpBB Karma Extension Styling */
+
+.karma-panel {
+	float: right;
+	margin-left: 8px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	display: inline-flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 3px;
+}
+
+.karma-score {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: bold;
+	color: #536472;
+	background-color: #ccced1;
+	margin: 0 4px;
+	min-width: 22px;
+	height: 22px;
+	border-radius: 11px;
+	padding: 0 4px;
+	box-sizing: border-box;
+	text-align: center;
+	user-select: none;
+	transition: all 0.15s ease;
+	vertical-align: middle;
+}
+
+/* Hover & Active (Voted) States */
+
+/* UP VOTe: Blue color profile */
+.button.karma-vote-btn.karma-upvote:hover,
+.karma-panel.voted-up .karma-upvote {
+	border-color: #105289 !important;
+	background-color: #f1f6fa !important;
+	background-image: linear-gradient(to bottom, #FFFFFF 0%, #f1f6fa 100%) !important;
+	color: #105289 !important;
+}
+
+.button.karma-vote-btn.karma-upvote:hover .icon,
+.karma-panel.voted-up .karma-upvote .icon {
+	color: #105289 !important;
+}
+
+/* DOWN VOTE: Orange/Red color profile */
+.button.karma-vote-btn.karma-downvote:hover,
+.karma-panel.voted-down .karma-downvote {
+	border-color: #D31141 !important;
+	background-color: #fdf1f4 !important;
+	background-image: linear-gradient(to bottom, #FFFFFF 0%, #fdf1f4 100%) !important;
+	color: #D31141 !important;
+}
+
+.button.karma-vote-btn.karma-downvote:hover .icon,
+.karma-panel.voted-down .karma-downvote .icon {
+	color: #D31141 !important;
+}
+
+/* Voted Score Badge coloring */
+.karma-panel.voted-up .karma-score {
+	color: #105289;
+	background-color: #bcdbf5;
+}
+
+.karma-panel.voted-down .karma-score {
+	color: #D31141;
+	background-color: #fae6eb;
+}
+
+/* Disabled state */
+.karma-panel.karma-disabled .karma-vote-btn {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.karma-panel.karma-disabled .karma-vote-btn:hover {
+	border-color: #C7C3BF !important;
+	background-color: #E9E9E9 !important;
+	background-image: linear-gradient(to bottom, #FFFFFF 0%, #E9E9E9 100%) !important;
+	color: #8f8f8f !important;
+}
+
+.karma-panel.karma-disabled .karma-score {
+	color: #8a96a0;
+	background-color: #f0f0f0;
+}
+
+.karma-vote-btn.karma-btn-blocked {
+	cursor: default;
+}
+
+/* Karma Ranking Page styles */
+.karma-rank-avatar img {
+	border-radius: 50%;
+	width: 32px;
+	height: 32px;
+	object-fit: cover;
+	vertical-align: middle;
+}

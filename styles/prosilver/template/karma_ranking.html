@@ -1,0 +1,55 @@
+{% INCLUDE 'overall_header.html' %}
+{% if not definition.INCLUDED_KARMA_CSS %}
+	{% INCLUDECSS '@vinny_karma/karma.css' %}
+	{% DEFINE INCLUDED_KARMA_CSS = true %}
+{% endif %}
+
+<h2 class="solo">{{ lang('KARMA_RANKING') }}</h2>
+
+<div class="forumbg">
+	<div class="inner">
+		<table class="table1" id="karma-ranking-table">
+			<thead>
+				<tr>
+					<th class="name" style="width: 10%; text-align: center;">{{ lang('KARMA_POSITION') }}</th>
+					<th class="name">{{ lang('KARMA_USER') }}</th>
+					<th class="posts" style="width: 25%; text-align: center;">{{ lang('KARMA_TOTAL') }}</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for row in loops.ranking_row %}
+				<tr class="{% if row.S_ROW_COUNT is even %}bg1{% else %}bg2{% endif %}">
+					<td style="text-align: center; vertical-align: middle;">
+						{% if row.POSITION == 1 %}
+							<i class="icon fa-trophy fa-fw rank-gold" aria-hidden="true" title="{{ lang('KARMA_RANK_GOLD')|e('html_attr') }}" style="color: #D4AF37; font-size: 1.3em;"></i>
+						{% elseif row.POSITION == 2 %}
+							<i class="icon fa-trophy fa-fw rank-silver" aria-hidden="true" title="{{ lang('KARMA_RANK_SILVER')|e('html_attr') }}" style="color: #C0C0C0; font-size: 1.3em;"></i>
+						{% elseif row.POSITION == 3 %}
+							<i class="icon fa-trophy fa-fw rank-bronze" aria-hidden="true" title="{{ lang('KARMA_RANK_BRONZE')|e('html_attr') }}" style="color: #CD7F32; font-size: 1.3em;"></i>
+						{% else %}
+							<strong>{{ row.POSITION }}</strong>
+						{% endif %}
+					</td>
+					<td style="vertical-align: middle;">
+						{% if row.AVATAR %}
+							<span class="karma-rank-avatar">{{ row.AVATAR }}</span>
+						{% endif %}
+						{{ row.USER_FULL }}
+					</td>
+					<td style="text-align: center; vertical-align: middle;">
+						<span class="karma-rank-score-total" style="font-weight: bold; font-size: 1.1em;">{{ row.TOTAL_KARMA }}</span>
+					</td>
+				</tr>
+			{% else %}
+				<tr class="bg1">
+					<td colspan="4" style="text-align: center;">{{ lang('KARMA_RANK_EMPTY') }}</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<br>
+
+{% INCLUDE 'overall_footer.html' %}
