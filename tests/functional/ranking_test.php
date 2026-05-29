@@ -12,10 +12,9 @@ namespace vinny\karma\tests\functional;
 
 class ranking_test extends \phpbb_functional_test_case
 {
-	public function setUp(): void
+	static protected function setup_extensions()
 	{
-		parent::setUp();
-		$this->add_extension('vinny/karma');
+		return array('vinny/karma');
 	}
 
 	public function test_ranking_page()

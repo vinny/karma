@@ -15,9 +15,14 @@ class database_test extends \phpbb_database_test_case
 	protected $db_tools;
 	protected $table_prefix;
 
+	static protected function setup_extensions()
+	{
+		return array('vinny/karma');
+	}
+
 	public function getDataSet()
 	{
-		return $this->createXMLDataSet(dirname(__FILE__) . '/fixtures/add_database_changes.xml');
+		return new \PHPUnit\DbUnit\DataSet\DefaultDataSet();
 	}
 
 	public function setUp(): void
