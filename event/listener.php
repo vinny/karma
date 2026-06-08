@@ -221,7 +221,7 @@ class listener implements EventSubscriberInterface
 		$can_manage_karma = $this->auth->acl_get('m_karma_manage');
 
 		$karma_row_data = array(
-			'S_KARMA_VIEW' => $can_view && !$is_own_post,
+			'S_KARMA_VIEW' => $can_view,
 			'S_KARMA_VOTE' => $can_vote && $is_registered && !$is_own_post,
 			'S_IS_OWN_POST' => $is_own_post,
 			'POST_KARMA' => $post_karma,

@@ -126,10 +126,10 @@ class ranking
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$avatar = phpbb_get_user_avatar(array(
-				'avatar' => $row['user_avatar'],
-				'avatar_type' => $row['user_avatar_type'],
-				'avatar_width' => $row['user_avatar_width'],
-				'avatar_height' => $row['user_avatar_height'],
+				'avatar'		=> $row['user_avatar'],
+				'avatar_type'	=> $row['user_avatar_type'],
+				'avatar_width'	=> $row['user_avatar_width'],
+				'avatar_height'	=> $row['user_avatar_height'],
 			));
 
 			$ranking_data[] = array(

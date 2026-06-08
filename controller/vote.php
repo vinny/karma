@@ -104,9 +104,9 @@ class vote
 		if (!$this->user->data['is_registered'] || $this->user->data['user_id'] == ANONYMOUS)
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_MUST_LOG_IN')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_MUST_LOG_IN')
 			));
 		}
 
@@ -117,9 +117,9 @@ class vote
 		if (empty($hash) || !check_link_hash($hash, 'vinny_karma'))
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('FORM_INVALID')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('FORM_INVALID')
 			));
 		}
 
@@ -134,9 +134,9 @@ class vote
 		if (!$post)
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_POST_NOT_FOUND')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_POST_NOT_FOUND')
 			));
 		}
 
@@ -145,9 +145,9 @@ class vote
 		if (!$enabled)
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_NO_PERMISSION')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_NO_PERMISSION')
 			));
 		}
 
@@ -156,9 +156,9 @@ class vote
 		if (in_array((int) $post['forum_id'], $excluded_forums))
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_NO_PERMISSION')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_NO_PERMISSION')
 			));
 		}
 
@@ -167,9 +167,9 @@ class vote
 		if ($type === 'down' && !$enable_downvote)
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_NO_PERMISSION')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_NO_PERMISSION')
 			));
 		}
 
@@ -179,9 +179,9 @@ class vote
 		if (!$this->auth->acl_get('u_karma_vote'))
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_NO_PERMISSION')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_NO_PERMISSION')
 			));
 		}
 
@@ -189,9 +189,9 @@ class vote
 		if ($user_id === $poster_id)
 		{
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_SELF_VOTE')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_SELF_VOTE')
 			));
 		}
 
@@ -214,9 +214,9 @@ class vote
 				{
 					$remaining = $flood_interval - $time_passed;
 					return new JsonResponse(array(
-						'status' => 'error',
-						'title' => $this->user->lang('KARMA'),
-						'message' => sprintf($this->user->lang('KARMA_ERROR_FLOOD'), $remaining)
+						'status'	=> 'error',
+						'title'		=> $this->user->lang('KARMA'),
+						'message'	=> sprintf($this->user->lang('KARMA_ERROR_FLOOD'), $remaining)
 					));
 				}
 			}
@@ -246,9 +246,9 @@ class vote
 			if ($previous_direction === $new_direction)
 			{
 				return new JsonResponse(array(
-					'status' => 'error',
-					'title' => $this->user->lang('KARMA'),
-					'message' => $this->user->lang('KARMA_ERROR_ALREADY_VOTED')
+					'status'	=> 'error',
+					'title'		=> $this->user->lang('KARMA'),
+					'message'	=> $this->user->lang('KARMA_ERROR_ALREADY_VOTED')
 				));
 			}
 			// If voting in the opposite direction, retract the current vote (reset to 0)
@@ -298,10 +298,10 @@ class vote
 			{
 				// Insert new vote
 				$sql_arr = array(
-					'post_id' => (int) $post_id,
-					'user_id' => $user_id,
-					'vote_direction' => $vote_direction,
-					'vote_time' => time(),
+					'post_id'			=> (int) $post_id,
+					'user_id'			=> $user_id,
+					'vote_direction'	=> $vote_direction,
+					'vote_time'			=> time(),
 				);
 				$sql = 'INSERT INTO ' . $this->table_prefix . 'vinny_karma_votes ' . $this->db->sql_build_array('INSERT', $sql_arr);
 				$this->db->sql_query($sql);
@@ -315,9 +315,9 @@ class vote
 			// Rollback on any failure
 			$this->db->sql_transaction('rollback');
 			return new JsonResponse(array(
-				'status' => 'error',
-				'title' => $this->user->lang('KARMA'),
-				'message' => $this->user->lang('KARMA_ERROR_DB_FAILED')
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_DB_FAILED')
 			));
 		}
 
@@ -325,12 +325,12 @@ class vote
 		if ($vote_direction !== 0 && $poster_id !== ANONYMOUS)
 		{
 			$this->notification_manager->add_notifications('vinny.karma.notification.type.karma_vote', array(
-				'post_id' => (int) $post_id,
-				'topic_id' => (int) $post['topic_id'],
-				'post_author_id' => $poster_id,
-				'voter_id' => $user_id,
-				'vote_type' => ($vote_direction === 1) ? 'up' : 'down',
-				'vote_username' => $this->user->data['username'],
+				'post_id'			=> (int) $post_id,
+				'topic_id'			=> (int) $post['topic_id'],
+				'post_author_id'	=> $poster_id,
+				'voter_id'			=> $user_id,
+				'vote_type'			=> ($vote_direction === 1) ? 'up' : 'down',
+				'vote_username'		=> $this->user->data['username'],
 			));
 		}
 
@@ -352,9 +352,10 @@ class vote
 
 		return new JsonResponse(array(
 			'status' => 'success',
-			'post_karma' => (int) $updated_post['post_karma'],
-			'user_karma' => $updated_user_karma,
-			'vote_direction' => $vote_direction,
+			'post_karma'		=> (int) $updated_post['post_karma'],
+			'user_karma'		=> $updated_user_karma,
+			'poster_id'			=> $poster_id,
+			'vote_direction'	=> $vote_direction,
 		));
 	}
 
@@ -448,8 +449,8 @@ class vote
 
 				// Log to moderator logs
 				$this->log->add('mod', $this->user->data['user_id'], $this->user->ip, 'LOG_MCP_KARMA_RESET_POST', time(), array(
-					'forum_id' => 0,
-					'topic_id' => 0,
+					'forum_id'	=> 0,
+					'topic_id'	=> 0,
 					$post_id,
 					$poster_name
 				));
@@ -466,7 +467,7 @@ class vote
 		else
 		{
 			confirm_box(false, $this->user->lang('VINNY_KARMA_MCP_RESET_POST_CONFIRM'), build_hidden_fields(array(
-				'hash' => $hash,
+				'hash'	=> $hash,
 			)));
 		}
 	}

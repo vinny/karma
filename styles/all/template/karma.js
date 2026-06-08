@@ -39,6 +39,44 @@
 				}
 			}
 
+			// Update author's karma score in all profiles on the pagee
+			if (res.poster_id) {
+				var $config = $('#karma-config');
+				var langKarma = $config.attr('data-lang-karma') || 'Karma:';
+
+				$('.postprofile').each(function() {
+					var $profile = $(this);
+					var found = false;
+					$profile.find('a').each(function() {
+						var href = $(this).attr('href') || '';
+						var match = href.match(/[?&]u=(\d+)/);
+						if (match && parseInt(match[1], 10) === res.poster_id) {
+							found = true;
+							return false; // break loop
+						}
+					});
+
+					if (found) {
+						var $karmaLine = $profile.find('.profile-karma');
+						if (res.user_karma === 0) {
+							$karmaLine.remove();
+						} else {
+							if ($karmaLine.length) {
+								$karmaLine.find('.profile-karma-value').text(res.user_karma);
+							} else {
+								var $newKarmaLine = $('<dd class="profile-custom-field profile-karma"><strong>' + langKarma + ' </strong><span class="profile-karma-value">' + res.user_karma + '</span></dd>');
+								var $posts = $profile.find('.profile-posts');
+								if ($posts.length) {
+									$newKarmaLine.insertAfter($posts);
+								} else {
+									$profile.append($newKarmaLine);
+								}
+							}
+						}
+					}
+				});
+			}
+
 			// Reset voted classes and apply the new state
 			$panel.removeClass('voted-up voted-down');
 

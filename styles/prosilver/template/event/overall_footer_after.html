@@ -5,7 +5,8 @@
 		data-lang-already-up="{{ L_KARMA_ALREADY_VOTED_UP|e('html_attr') }}"
 		data-lang-already-down="{{ L_KARMA_ALREADY_VOTED_DOWN|e('html_attr') }}"
 		data-lang-error-title="{{ lang('KARMA')|e('html_attr') }}"
-		data-lang-error-message="{{ L_KARMA_ERROR_VOTE_FAILED|e('html_attr') }}"></div>
+		data-lang-error-message="{{ L_KARMA_ERROR_VOTE_FAILED|e('html_attr') }}"
+		data-lang-karma="{{ lang('KARMA')|e('html_attr') }}{{ lang('COLON')|e('html_attr') }}"></div>
 
 	{% INCLUDEJS '@vinny_karma/karma.js' %}
 	{% if not definition.INCLUDED_KARMA_CSS %}

@@ -1,5 +1,5 @@
-{% if postrow.S_SHOW_KARMA %}
+{% if postrow.S_SHOW_KARMA and postrow.POSTER_KARMA != 0 %}
 	<dd class="profile-custom-field profile-karma">
-		<strong>{{ lang('KARMA') }}{{ lang('COLON') }}</strong> {{ postrow.POSTER_KARMA }}
+		<strong>{{ lang('KARMA') }}{{ lang('COLON') }}</strong> <span class="profile-karma-value">{{ postrow.POSTER_KARMA }}</span>
 	</dd>
 {% endif %}
