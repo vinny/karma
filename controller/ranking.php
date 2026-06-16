@@ -152,15 +152,6 @@ class ranking
 			$this->template->assign_block_vars('ranking_row', $row_data);
 		}
 
-		// Set page title and load overall header/footer
-		page_header($this->user->lang('KARMA_RANKING'));
-
-		$this->template->set_filenames(array(
-			'body' => '@vinny_karma/karma_ranking.html',
-		));
-
-		page_footer();
-
-		return new Response();
+		return $this->helper->render('@vinny_karma/karma_ranking.html', 'KARMA_RANKING');
 	}
 }

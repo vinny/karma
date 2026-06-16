@@ -24,12 +24,7 @@ $lang = array_merge($lang, array(
 	'MCP_KARMA_USER_DETAILS'			=> 'User details',
 	'ACL_M_KARMA_MANAGE'				=> 'Can moderate user karma',
 
-	'VINNY_KARMA_MCP_USER_NOT_FOUND'	=> 'The specified user was not found.',
-	'VINNY_KARMA_MCP_SELECT_USER'		=> 'Select User',
-	'VINNY_KARMA_MCP_VOTER_STATS'		=> 'Votes Cast (Voter Stats)',
-	'VINNY_KARMA_MCP_AUTHOR_STATS'		=> 'Votes Received (Author Stats)',
-	'VINNY_KARMA_MCP_UPVOTES'			=> 'Upvotes',
-	'VINNY_KARMA_MCP_DOWNVOTES'			=> 'Downvotes',
+
 	'VINNY_KARMA_MCP_RESET'				=> 'Reset',
 	'VINNY_KARMA_MCP_RESET_RECEIVED'	=> 'Reset Received Karma',
 	'VINNY_KARMA_MCP_RESET_CAST'		=> 'Reset Cast Karma',

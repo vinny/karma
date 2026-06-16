@@ -1,6 +1,6 @@
 {% if S_ALLOW_KARMA_RANKING %}
 <li class="tab karma-ranking" data-last-responsive="true">
-	<a href="{{ U_KARMA_RANKING }}" title="{{ lang('KARMA_RANKING') }}" role="menuitem">
+	<a href="{{ U_KARMA_RANKING }}" title="{{ lang('KARMA_RANKING')|e('html_attr') }}" role="menuitem">
 		<i class="icon fa-trophy fa-fw" aria-hidden="true"></i><span>{{ lang('KARMA_RANKING') }}</span>
 	</a>
 </li>

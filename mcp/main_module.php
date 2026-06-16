@@ -120,6 +120,14 @@ class main_module
 				// Handle actions
 				if ($action)
 				{
+					if (!confirm_box(true))
+					{
+						if (!check_form_key('mcp_karma'))
+						{
+							trigger_error('FORM_INVALID', E_USER_WARNING);
+						}
+					}
+
 					if ($action === 'reset_received')
 					{
 						if (confirm_box(true))
@@ -163,7 +171,9 @@ class main_module
 							catch (\Exception $e)
 							{
 								$db->sql_transaction('rollback');
-								trigger_error($e->getMessage() . adm_back_link($this->u_action), E_USER_WARNING);
+								$phpbb_log = $phpbb_container->get('log');
+								$phpbb_log->add('critical', $user->data['user_id'], $user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
+								trigger_error($user->lang('KARMA_ERROR_INTERNAL') . adm_back_link($this->u_action), E_USER_WARNING);
 							}
 
 							meta_refresh(3, $this->u_action);
@@ -203,7 +213,9 @@ class main_module
 							catch (\Exception $e)
 							{
 								$db->sql_transaction('rollback');
-								trigger_error($e->getMessage() . adm_back_link($this->u_action), E_USER_WARNING);
+								$phpbb_log = $phpbb_container->get('log');
+								$phpbb_log->add('critical', $user->data['user_id'], $user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
+								trigger_error($user->lang('KARMA_ERROR_INTERNAL') . adm_back_link($this->u_action), E_USER_WARNING);
 							}
 
 							meta_refresh(3, $this->u_action);
@@ -256,7 +268,6 @@ class main_module
 							)));
 						}
 					}
-
 				}
 
 				if (!function_exists('phpbb_get_user_avatar'))
@@ -352,20 +363,20 @@ class main_module
 		global $db;
 
 		// 1. Recalculate post_karma for all posts
-		$sql = 'UPDATE ' . POSTS_TABLE . ' p
-			SET p.post_karma = (
-				SELECT COALESCE(SUM(v.vote_direction), 0)
-				FROM ' . $table_prefix . 'vinny_karma_votes v
-				WHERE v.post_id = p.post_id
+		$sql = 'UPDATE ' . POSTS_TABLE . '
+			SET post_karma = (
+				SELECT COALESCE(SUM(vote_direction), 0)
+				FROM ' . $table_prefix . 'vinny_karma_votes
+				WHERE post_id = ' . POSTS_TABLE . '.post_id
 			)';
 		$db->sql_query($sql);
 
 		// 2. Recalculate user_karma for all users
-		$sql = 'UPDATE ' . USERS_TABLE . ' u
-			SET u.user_karma = (
-				SELECT COALESCE(SUM(p.post_karma), 0)
-				FROM ' . POSTS_TABLE . ' p
-				WHERE p.poster_id = u.user_id
+		$sql = 'UPDATE ' . USERS_TABLE . '
+			SET user_karma = (
+				SELECT COALESCE(SUM(post_karma), 0)
+				FROM ' . POSTS_TABLE . '
+				WHERE poster_id = ' . USERS_TABLE . '.user_id
 			)';
 		$db->sql_query($sql);
 	}

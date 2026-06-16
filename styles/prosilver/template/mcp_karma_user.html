@@ -11,11 +11,11 @@
 <div class="panel">
 	<div class="inner">
 
-	<h3>{{ USERNAME_FULL }}</h3>
+	<h3>{{ USERNAME_FULL|raw }}</h3>
 
 	<div>
 		<div class="column1">
-			{% if AVATAR_IMG %}<div>{{ AVATAR_IMG }}</div>{% endif %}
+			{% if AVATAR_IMG %}<div>{{ AVATAR_IMG|raw }}</div>{% endif %}
 		</div>
 
 		<div class="column2">

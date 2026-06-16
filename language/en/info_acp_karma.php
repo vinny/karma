@@ -52,8 +52,6 @@ $lang = array_merge($lang, array(
 
 	'VINNY_KARMA_PRUNE'						=> 'Prune Old Vote Logs',
 	'VINNY_KARMA_PRUNE_EXPLAIN'				=> 'Clears historical vote tracking records that are older than the specified number of days (e.g. entering 30 will delete logs older than 30 days, keeping all recent votes and today’s votes intact). The absolute karma scores of posts and users will remain unchanged.',
-	'VINNY_KARMA_PRUNE_DAYS'				=> 'Prune votes older than',
-	'VINNY_KARMA_PRUNE_DAYS_EXPLAIN'		=> 'Specify the age threshold in days. Any vote logs recorded before this threshold will be permanently deleted.',
 	'VINNY_KARMA_PRUNE_SUCCESS'				=> 'Successfully pruned %d vote entries older than %d days.',
 
 	// Log

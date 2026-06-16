@@ -50,7 +50,7 @@ class tables extends \phpbb\db\migration\migration
 						'post_id' => array('UINT', 0),
 						'user_id' => array('UINT', 0),
 						'vote_direction' => array('TINT:4', 0),
-						'vote_time' => array('TIMESTAMP', 0),
+						'vote_time' => array('UINT:11', 0),
 					),
 					'PRIMARY_KEY' => 'vote_id',
 					'KEYS' => array(

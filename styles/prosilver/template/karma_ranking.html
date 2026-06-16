@@ -32,9 +32,9 @@
 					</td>
 					<td style="vertical-align: middle;">
 						{% if row.AVATAR %}
-							<span class="karma-rank-avatar">{{ row.AVATAR }}</span>
+							<span class="karma-rank-avatar">{{ row.AVATAR|raw }}</span>
 						{% endif %}
-						{{ row.USER_FULL }}
+						{{ row.USER_FULL|raw }}
 					</td>
 					<td style="text-align: center; vertical-align: middle;">
 						<span class="karma-rank-score-total">{{ row.TOTAL_KARMA }}</span>

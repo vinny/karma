@@ -23,7 +23,7 @@
 		<dl>
 			<dt><label for="username">{{ lang('VINNY_KARMA_RESET_USER') }}</label><br /><span>{{ lang('VINNY_KARMA_RESET_USER_EXPLAIN') }}</span></dt>
 			<dd>
-				<input type="text" id="username" name="username" placeholder="{{ lang('USERNAME') }}" />&nbsp;
+				<input type="text" id="username" name="username" placeholder="{{ lang('USERNAME')|e('html_attr') }}" />&nbsp;
 				[ <a href="{{ U_FIND_USERNAME }}" onclick="find_username(this.href); return false;">{{ lang('FIND_USERNAME') }}</a> ]&nbsp;
 				<input class="button2" type="submit" id="submit_reset_user" name="submit_reset_user" value="{{ lang('RUN') }}" />
 			</dd>
@@ -65,7 +65,7 @@
 		<tbody>
 			{% for votes in loops.votes %}
 				<tr>
-					<td>{{ votes.VOTER }}</td>
+					<td>{{ votes.VOTER|raw }}</td>
 					<td style="text-align: center;">
 						{% if votes.DIRECTION == 1 %}
 							<span style="color: green; font-weight: bold;">+1 ({{ lang('VINNY_KARMA_AUDIT_UP') }})</span>
@@ -73,7 +73,7 @@
 							<span style="color: red; font-weight: bold;">-1 ({{ lang('VINNY_KARMA_AUDIT_DOWN') }})</span>
 						{% endif %}
 					</td>
-					<td>{{ votes.AUTHOR }}</td>
+					<td>{{ votes.AUTHOR|raw }}</td>
 					<td>
 						{% if votes.POST_URL %}
 							<a href="{{ votes.POST_URL }}">{{ lang('POST') }} #{{ votes.POST_ID }}</a>

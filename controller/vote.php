@@ -425,13 +425,13 @@ class vote
 				// Recalculate poster total karma (re-sync)
 				if ($poster_id !== ANONYMOUS)
 				{
-					$sql = 'UPDATE ' . USERS_TABLE . ' u
-						SET u.user_karma = (
-							SELECT COALESCE(SUM(p.post_karma), 0)
-							FROM ' . POSTS_TABLE . ' p
-							WHERE p.poster_id = u.user_id
+					$sql = 'UPDATE ' . USERS_TABLE . '
+						SET user_karma = (
+							SELECT COALESCE(SUM(post_karma), 0)
+							FROM ' . POSTS_TABLE . '
+							WHERE poster_id = ' . (int) $poster_id . '
 						)
-						WHERE u.user_id = ' . (int) $poster_id;
+						WHERE user_id = ' . (int) $poster_id;
 					$this->db->sql_query($sql);
 				}
 
@@ -458,7 +458,8 @@ class vote
 			catch (\Exception $e)
 			{
 				$this->db->sql_transaction('rollback');
-				trigger_error($e->getMessage(), E_USER_WARNING);
+				$this->log->add('critical', $this->user->data['user_id'], $this->user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
+				trigger_error($this->user->lang('KARMA_ERROR_INTERNAL'), E_USER_WARNING);
 			}
 
 			meta_refresh(3, $redirect_url);

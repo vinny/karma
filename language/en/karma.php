@@ -55,6 +55,9 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MCP_RESET_POST_CONFIRM'	=> 'Are you sure you want to reset the karma score of this post back to 0?',
 	'VINNY_KARMA_MCP_RESET_POST_SUCCESS'	=> 'Successfully reset karma score for post #%d.',
 	'VINNY_KARMA_MCP_MANAGE'				=> 'Manage',
+
+	'KARMA_ERROR_INTERNAL'					=> 'An internal error occurred. The details have been logged.',
+	'LOG_KARMA_EXCEPTION'					=> 'Karma System error: %s',
 ));
 
 // Report Reasons

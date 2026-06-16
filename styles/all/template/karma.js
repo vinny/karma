@@ -39,10 +39,10 @@
 				}
 			}
 
-			// Update author's karma score in all profiles on the pagee
+			// Update author's karma score in all profiles on the page
 			if (res.poster_id) {
 				var $config = $('#karma-config');
-				var langKarma = $config.attr('data-lang-karma') || 'Karma:';
+				var langKarma = $config.attr('data-lang-karma') || '';
 
 				$('.postprofile').each(function() {
 					var $profile = $(this);

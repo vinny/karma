@@ -262,7 +262,7 @@ class listener implements EventSubscriberInterface
 		$template_ary['USER_KARMA'] = $user_karma;
 		$template_ary['S_SHOW_KARMA'] = $can_view;
 		$template_ary['S_CAN_MANAGE_KARMA'] = $can_manage;
-		$template_ary['U_MCP_KARMA_MANAGE'] = $can_manage ? append_sid($this->root_path . 'mcp.' . $this->php_ext, 'i=-vinny-karma-mcp-main_module&amp;mode=karma_user_details&amp;u=' . $user_id) : '';
+		$template_ary['U_MCP_KARMA_MANAGE'] = $can_manage ? append_sid($this->root_path . 'mcp.' . $this->php_ext, 'i=-vinny-karma-mcp-main_module&mode=karma_user_details&u=' . $user_id) : '';
 
 		$event['template_ary'] = $template_ary;
 	}
