@@ -75,6 +75,11 @@ class main_module
 			$action = key($action);
 		}
 
+		if ($request->is_set_post('cancel'))
+		{
+			$action = '';
+		}
+
 		switch ($mode)
 		{
 			case 'karma_user':
@@ -234,9 +239,9 @@ class main_module
 						$adjustment = $request->variable('adjust_amount', 0);
 						$reason = $request->variable('adjust_reason', '', true);
 
-						if ($adjustment === 0)
+						if ($adjustment === 0 || $reason === '')
 						{
-							trigger_error('FORM_INVALID', E_USER_WARNING);
+							trigger_error($user->lang('VINNY_KARMA_MCP_ADJUST_REQUIRED'), E_USER_WARNING);
 						}
 
 						if (confirm_box(true))

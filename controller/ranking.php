@@ -152,6 +152,12 @@ class ranking
 			$this->template->assign_block_vars('ranking_row', $row_data);
 		}
 
-		return $this->helper->render('@vinny_karma/karma_ranking.html', 'KARMA_RANKING');
+		// 5. Add Breadcrumbs (navlinks)
+		$this->template->assign_block_vars('navlinks', array(
+			'FORUM_NAME'	=> $this->user->lang('KARMA_RANKING'),
+			'U_VIEW_FORUM'	=> $this->helper->route('vinny_karma_ranking'),
+		));
+
+		return $this->helper->render('@vinny_karma/karma_ranking.html', $this->user->lang('KARMA_RANKING'));
 	}
 }

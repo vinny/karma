@@ -33,7 +33,7 @@
 
 /* Hover & Active (Voted) States */
 
-/* UP VOTe: Blue color profile */
+/* UP VOTE: Blue color profile */
 .button.karma-vote-btn.karma-upvote:hover,
 .karma-panel.voted-up .karma-upvote {
 	border-color: #105289 !important;
