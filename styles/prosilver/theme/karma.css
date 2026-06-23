@@ -36,29 +36,29 @@
 /* UP VOTE: Blue color profile */
 .button.karma-vote-btn.karma-upvote:hover,
 .karma-panel.voted-up .karma-upvote {
-	border-color: #105289 !important;
-	background-color: #f1f6fa !important;
-	background-image: linear-gradient(to bottom, #FFFFFF 0%, #f1f6fa 100%) !important;
-	color: #105289 !important;
+	border-color: #105289;
+	background-color: #f1f6fa;
+	background-image: linear-gradient(to bottom, #FFFFFF 0%, #f1f6fa 100%);
+	color: #105289;
 }
 
 .button.karma-vote-btn.karma-upvote:hover .icon,
 .karma-panel.voted-up .karma-upvote .icon {
-	color: #105289 !important;
+	color: #105289;
 }
 
 /* DOWN VOTE: Orange/Red color profile */
 .button.karma-vote-btn.karma-downvote:hover,
 .karma-panel.voted-down .karma-downvote {
-	border-color: #D31141 !important;
-	background-color: #fdf1f4 !important;
-	background-image: linear-gradient(to bottom, #FFFFFF 0%, #fdf1f4 100%) !important;
-	color: #D31141 !important;
+	border-color: #D31141;
+	background-color: #fdf1f4;
+	background-image: linear-gradient(to bottom, #FFFFFF 0%, #fdf1f4 100%);
+	color: #D31141;
 }
 
 .button.karma-vote-btn.karma-downvote:hover .icon,
 .karma-panel.voted-down .karma-downvote .icon {
-	color: #D31141 !important;
+	color: #D31141;
 }
 
 /* Voted Score Badge coloring */
@@ -79,10 +79,10 @@
 }
 
 .karma-panel.karma-disabled .karma-vote-btn:hover {
-	border-color: #C7C3BF !important;
-	background-color: #E9E9E9 !important;
-	background-image: linear-gradient(to bottom, #FFFFFF 0%, #E9E9E9 100%) !important;
-	color: #8f8f8f !important;
+	border-color: #C7C3BF;
+	background-color: #E9E9E9;
+	background-image: linear-gradient(to bottom, #FFFFFF 0%, #E9E9E9 100%);
+	color: #8f8f8f;
 }
 
 .karma-panel.karma-disabled .karma-score {
@@ -103,17 +103,17 @@
 	vertical-align: middle;
 }
 
-.rank-gold {
+.karma-rank-gold {
 	color: #D4AF37;
 	font-size: 1.3em;
 }
 
-.rank-silver {
+.karma-rank-silver {
 	color: #C0C0C0;
 	font-size: 1.3em;
 }
 
-.rank-bronze {
+.karma-rank-bronze {
 	color: #CD7F32;
 	font-size: 1.3em;
 }

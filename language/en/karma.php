@@ -58,6 +58,12 @@ $lang = array_merge($lang, array(
 
 	'KARMA_ERROR_INTERNAL'					=> 'An internal error occurred. The details have been logged.',
 	'LOG_KARMA_EXCEPTION'					=> 'Karma System error: %s',
+
+	// Moderator logs
+	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Reset user received karma</strong><br />» %s',
+	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Reset user cast votes</strong><br />» %s',
+	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Adjusted user karma score</strong><br />» %s (Adjustment: %d)',
+	'LOG_MCP_KARMA_RESET_POST'			=> '<strong>Reset post karma score</strong><br />» Author: %s',
 ));
 
 // Report Reasons

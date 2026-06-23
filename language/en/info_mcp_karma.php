@@ -52,10 +52,4 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MCP_RESET_CAST_SUCCESS'		=> 'Successfully reset all cast karma for %s.',
 	'VINNY_KARMA_MCP_ADJUST_SUCCESS'			=> 'Successfully adjusted karma balance for %s by %d points.',
 	'VINNY_KARMA_MCP_ADJUST_REQUIRED'			=> 'Both adjustment amount (non-zero) and moderation reason are required.',
-
-	// Moderator logs
-	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Reset user received karma</strong><br />» %s',
-	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Reset user cast votes</strong><br />» %s',
-	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Adjusted user karma score</strong><br />» %s (Adjustment: %d)',
-	'LOG_MCP_KARMA_RESET_POST'			=> '<strong>Reset post karma score</strong><br />» Post: #%d, Author: %s',
 ));

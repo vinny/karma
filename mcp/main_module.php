@@ -97,7 +97,7 @@ class main_module
 				$user_id = $request->variable('u', 0);
 				$username = $request->variable('username', '', true);
 
-				$sql_where = ($user_id) ? "user_id = $user_id" : "username_clean = '" . $db->sql_escape(utf8_clean_string($username)) . "'";
+				$sql_where = ($user_id) ? 'user_id = ' . (int) $user_id : "username_clean = '" . $db->sql_escape(utf8_clean_string($username)) . "'";
 
 				$sql = 'SELECT *
 					FROM ' . USERS_TABLE . "
@@ -161,8 +161,6 @@ class main_module
 									WHERE user_id = ' . (int) $user_id;
 								$db->sql_query($sql);
 
-								// Run global resync to update everyone's scores based on remaining logs
-								$this->resync($table_prefix);
 								$db->sql_transaction('commit');
 
 								// Log moderation action to Mod Log
@@ -199,12 +197,71 @@ class main_module
 							$db->sql_transaction('begin');
 							try
 							{
+								// Get affected post_ids voted by this user
+								$sql = 'SELECT DISTINCT post_id
+									FROM ' . $table_prefix . 'vinny_karma_votes
+									WHERE user_id = ' . (int) $user_id;
+								$result = $db->sql_query($sql);
+								$affected_post_ids = array();
+								while ($v_row = $db->sql_fetchrow($result))
+								{
+									$affected_post_ids[] = (int) $v_row['post_id'];
+								}
+								$db->sql_freeresult($result);
+
+								// Get affected author_ids
+								$affected_author_ids = array();
+								if (!empty($affected_post_ids))
+								{
+									$sql = 'SELECT DISTINCT poster_id
+										FROM ' . POSTS_TABLE . '
+										WHERE ' . $db->sql_in_set('post_id', $affected_post_ids);
+									$result = $db->sql_query($sql);
+									while ($a_row = $db->sql_fetchrow($result))
+									{
+										$affected_author_ids[] = (int) $a_row['poster_id'];
+									}
+									$db->sql_freeresult($result);
+								}
+
 								// Delete votes cast by this user
 								$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
 									WHERE user_id = ' . (int) $user_id;
 								$db->sql_query($sql);
 
-								$this->resync($table_prefix);
+								// Update post karma of the affected posts
+								if (!empty($affected_post_ids))
+								{
+									$sql = 'UPDATE ' . POSTS_TABLE . '
+										SET post_karma = (
+											SELECT COALESCE(SUM(vote_direction), 0)
+											FROM ' . $table_prefix . 'vinny_karma_votes
+											WHERE post_id = ' . POSTS_TABLE . '.post_id
+										)
+										WHERE ' . $db->sql_in_set('post_id', $affected_post_ids);
+									$db->sql_query($sql);
+								}
+
+								// Update user karma of the affected authors
+								if (!empty($affected_author_ids))
+								{
+									$affected_author_ids = array_filter($affected_author_ids, function($id) use ($user_id) {
+										return $id && $id != ANONYMOUS && $id != $user_id;
+									});
+
+									if (!empty($affected_author_ids))
+									{
+										$sql = 'UPDATE ' . USERS_TABLE . '
+											SET user_karma = (
+												SELECT COALESCE(SUM(post_karma), 0)
+												FROM ' . POSTS_TABLE . '
+												WHERE poster_id = ' . USERS_TABLE . '.user_id
+											)
+											WHERE ' . $db->sql_in_set('user_id', $affected_author_ids);
+										$db->sql_query($sql);
+									}
+								}
+
 								$db->sql_transaction('commit');
 
 								// Log moderation action to Mod Log
@@ -367,7 +424,7 @@ class main_module
 	{
 		global $db;
 
-		// 1. Recalculate post_karma for all posts
+		// Recalculate post_karma for all posts
 		$sql = 'UPDATE ' . POSTS_TABLE . '
 			SET post_karma = (
 				SELECT COALESCE(SUM(vote_direction), 0)
@@ -376,7 +433,7 @@ class main_module
 			)';
 		$db->sql_query($sql);
 
-		// 2. Recalculate user_karma for all users
+		// Recalculate user_karma for all users
 		$sql = 'UPDATE ' . USERS_TABLE . '
 			SET user_karma = (
 				SELECT COALESCE(SUM(post_karma), 0)

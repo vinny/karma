@@ -1,0 +1,10 @@
+{% if loops.karma_leaders|length %}
+	<div class="stat-block statistics">
+		<h3>{{ lang('KARMA_RANKING') }}</h3>
+		<p>
+			{% for leader in loops.karma_leaders %}
+				{{ leader.USER_FULL|raw }} ({{ leader.TOTAL_KARMA }}){% if not loop.last %}{{ lang('COMMA_SEPARATOR') }} {% endif %}
+			{% endfor %}
+		</p>
+	</div>
+{% endif %}

@@ -113,7 +113,7 @@ class main_module
 
 			if ($action)
 			{
-				if (($action !== 'reset_user' || !$request->is_set_post('confirm')) && !check_form_key('vinny_karma_maintenance'))
+				if ((!in_array($action, array('reset_user', 'prune')) || !$request->is_set_post('confirm')) && !check_form_key('vinny_karma_maintenance'))
 				{
 					trigger_error('FORM_INVALID', E_USER_WARNING);
 				}
@@ -137,6 +137,9 @@ class main_module
 							WHERE poster_id = ' . USERS_TABLE . '.user_id
 						)';
 					$db->sql_query($sql);
+
+					$phpbb_log = $phpbb_container->get('log');
+					$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'LOG_ACP_KARMA_RESYNC', time());
 
 					trigger_error($user->lang('VINNY_KARMA_RESYNC_SUCCESS') . adm_back_link($this->u_action));
 				}
@@ -170,6 +173,33 @@ class main_module
 						$db->sql_transaction('begin');
 						try
 						{
+							// Get affected post_ids voted by this user
+							$sql = 'SELECT DISTINCT post_id
+								FROM ' . $table_prefix . 'vinny_karma_votes
+								WHERE user_id = ' . (int) $target_user_id;
+							$result = $db->sql_query($sql);
+							$affected_post_ids = array();
+							while ($v_row = $db->sql_fetchrow($result))
+							{
+								$affected_post_ids[] = (int) $v_row['post_id'];
+							}
+							$db->sql_freeresult($result);
+
+							// Get affected author_ids
+							$affected_author_ids = array();
+							if (!empty($affected_post_ids))
+							{
+								$sql = 'SELECT DISTINCT poster_id
+									FROM ' . POSTS_TABLE . '
+									WHERE ' . $db->sql_in_set('post_id', $affected_post_ids);
+								$result = $db->sql_query($sql);
+								while ($a_row = $db->sql_fetchrow($result))
+								{
+									$affected_author_ids[] = (int) $a_row['poster_id'];
+								}
+								$db->sql_freeresult($result);
+							}
+
 							// Delete votes cast by this user
 							$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
 								WHERE user_id = ' . (int) $target_user_id;
@@ -196,24 +226,43 @@ class main_module
 								WHERE user_id = ' . (int) $target_user_id;
 							$db->sql_query($sql);
 
-							// Run resync queries to ensure everything is recalculated for other users
-							$sql = 'UPDATE ' . POSTS_TABLE . '
-								SET post_karma = (
-									SELECT COALESCE(SUM(vote_direction), 0)
-									FROM ' . $table_prefix . 'vinny_karma_votes
-									WHERE post_id = ' . POSTS_TABLE . '.post_id
-								)';
-							$db->sql_query($sql);
+							// Update post karma of the affected posts
+							if (!empty($affected_post_ids))
+							{
+								$sql = 'UPDATE ' . POSTS_TABLE . '
+									SET post_karma = (
+										SELECT COALESCE(SUM(vote_direction), 0)
+										FROM ' . $table_prefix . 'vinny_karma_votes
+										WHERE post_id = ' . POSTS_TABLE . '.post_id
+									)
+									WHERE ' . $db->sql_in_set('post_id', $affected_post_ids);
+								$db->sql_query($sql);
+							}
 
-							$sql = 'UPDATE ' . USERS_TABLE . '
-								SET user_karma = (
-									SELECT COALESCE(SUM(post_karma), 0)
-									FROM ' . POSTS_TABLE . '
-									WHERE poster_id = ' . USERS_TABLE . '.user_id
-								)';
-							$db->sql_query($sql);
+							// Update user karma of the affected authors
+							if (!empty($affected_author_ids))
+							{
+								$affected_author_ids = array_filter($affected_author_ids, function($id) use ($target_user_id) {
+									return $id && $id != ANONYMOUS && $id != $target_user_id;
+								});
+
+								if (!empty($affected_author_ids))
+								{
+									$sql = 'UPDATE ' . USERS_TABLE . '
+										SET user_karma = (
+											SELECT COALESCE(SUM(post_karma), 0)
+											FROM ' . POSTS_TABLE . '
+											WHERE poster_id = ' . USERS_TABLE . '.user_id
+										)
+										WHERE ' . $db->sql_in_set('user_id', $affected_author_ids);
+									$db->sql_query($sql);
+								}
+							}
 
 							$db->sql_transaction('commit');
+
+							$phpbb_log = $phpbb_container->get('log');
+							$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'LOG_ACP_KARMA_RESET_USER', time(), array($row['username']));
 						}
 						catch (\Exception $e)
 						{
@@ -240,17 +289,32 @@ class main_module
 					$prune_days = $request->variable('prune_days', 0);
 					if ($prune_days <= 0)
 					{
-						trigger_error('FORM_INVALID', E_USER_WARNING);
+						trigger_error($user->lang('VINNY_KARMA_PRUNE_INVALID_DAYS') . adm_back_link($this->u_action), E_USER_WARNING);
 					}
 
-					$prune_time = time() - ($prune_days * 86400);
+					if (confirm_box(true))
+					{
+						$prune_time = time() - ($prune_days * 86400);
 
-					$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
-						WHERE vote_time < ' . (int) $prune_time;
-					$db->sql_query($sql);
-					$affected_rows = $db->sql_affectedrows();
+						$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
+							WHERE vote_time < ' . (int) $prune_time;
+						$db->sql_query($sql);
+						$affected_rows = $db->sql_affectedrows();
 
-					trigger_error(sprintf($user->lang('VINNY_KARMA_PRUNE_SUCCESS'), $affected_rows, $prune_days) . adm_back_link($this->u_action));
+						$phpbb_log = $phpbb_container->get('log');
+						$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'LOG_ACP_KARMA_PRUNE', time(), array($prune_days, $affected_rows));
+
+						trigger_error(sprintf($user->lang('VINNY_KARMA_PRUNE_SUCCESS'), $affected_rows, $prune_days) . adm_back_link($this->u_action));
+					}
+					else
+					{
+						confirm_box(false, sprintf($user->lang('VINNY_KARMA_CONFIRM_PRUNE'), $prune_days), build_hidden_fields(array(
+							'prune_days'	=> $prune_days,
+							'submit_prune'	=> 1,
+							'i'				=> $id,
+							'mode'			=> $mode,
+						)));
+					}
 				}
 			}
 

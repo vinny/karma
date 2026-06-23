@@ -97,14 +97,17 @@ class listener implements EventSubscriberInterface
 	public static function getSubscribedEvents()
 	{
 		return array(
-			'core.user_setup' => 'user_setup',
-			'core.permissions' => 'add_permissions',
-			'core.viewtopic_post_rowset_data' => 'viewtopic_post_rowset_data',
-			'core.viewtopic_cache_user_data' => 'viewtopic_cache_user_data',
-			'core.viewtopic_modify_post_row' => 'viewtopic_modify_post_row',
+			'core.user_setup'									=> 'user_setup',
+			'core.permissions'									=> 'add_permissions',
+			'core.viewtopic_post_rowset_data'					=> 'viewtopic_post_rowset_data',
+			'core.viewtopic_cache_user_data'					=> 'viewtopic_cache_user_data',
+			'core.viewtopic_modify_post_row'					=> 'viewtopic_modify_post_row',
 			'core.memberlist_modify_view_profile_template_vars' => 'memberlist_modify_view_profile_template_vars',
-			'core.page_header' => 'page_header',
-			'core.modify_mcp_modules_display_option' => 'modify_mcp_modules_display_option',
+			'core.page_header'									=> 'page_header',
+			'core.modify_mcp_modules_display_option'			=> 'modify_mcp_modules_display_option',
+			'core.delete_user_before'							=> 'delete_user_before',
+			'core.delete_posts_after'							=> 'delete_posts_after',
+			'core.index_modify_page_title'						=> 'index_modify_page_title',
 		);
 	}
 
@@ -329,5 +332,146 @@ class listener implements EventSubscriberInterface
 		{
 			$module->set_display('\vinny\karma\mcp\main_module', 'karma_user_details', false);
 		}
+	}
+
+	/**
+	* Clean up karma data when a user is deleted
+	*
+	* @param \phpbb\event\data $event
+	*/
+	public function delete_user_before($event)
+	{
+		$user_ids = $event['user_ids'];
+		if (!empty($user_ids))
+		{
+			$user_ids = array_map('intval', $user_ids);
+
+			$this->db->sql_transaction('begin');
+			try
+			{
+				// Delete all votes cast by these users
+				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
+					WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
+				$this->db->sql_query($sql);
+
+				// Delete all votes received on posts authored by these users
+				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
+					WHERE post_id IN (
+						SELECT post_id
+						FROM ' . POSTS_TABLE . '
+						WHERE ' . $this->db->sql_in_set('poster_id', $user_ids) . '
+					)';
+				$this->db->sql_query($sql);
+
+				// Reset post_karma to 0 on posts authored by these users
+				$sql = 'UPDATE ' . POSTS_TABLE . '
+					SET post_karma = 0
+					WHERE ' . $this->db->sql_in_set('poster_id', $user_ids);
+				$this->db->sql_query($sql);
+
+				$this->db->sql_transaction('commit');
+			}
+			catch (\Exception $e)
+			{
+				$this->db->sql_transaction('rollback');
+			}
+
+			// Recalculate all scores
+			$this->resync();
+		}
+	}
+
+	/**
+	* Clean up karma votes and update user scores when posts are deleted
+	*
+	* @param \phpbb\event\data $event
+	*/
+	public function delete_posts_after($event)
+	{
+		$post_ids = $event['post_ids'];
+		$poster_ids = $event['poster_ids'];
+
+		if (!empty($post_ids))
+		{
+			$post_ids = array_map('intval', $post_ids);
+
+			// Delete all votes for these posts
+			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE ' . $this->db->sql_in_set('post_id', $post_ids);
+			$this->db->sql_query($sql);
+		}
+
+		if (!empty($poster_ids))
+		{
+			$poster_ids = array_filter(array_map('intval', $poster_ids), function($id) {
+				return $id && $id != ANONYMOUS;
+			});
+
+			if (!empty($poster_ids))
+			{
+				// Recalculate user_karma for the affected poster_ids
+				$sql = 'UPDATE ' . USERS_TABLE . '
+					SET user_karma = (
+						SELECT COALESCE(SUM(post_karma), 0)
+						FROM ' . POSTS_TABLE . '
+						WHERE poster_id = ' . USERS_TABLE . '.user_id
+					)
+					WHERE ' . $this->db->sql_in_set('user_id', $poster_ids);
+				$this->db->sql_query($sql);
+			}
+		}
+	}
+
+	/**
+	* Load top 5 karma leaders on the index page
+	*
+	* @param \phpbb\event\data $event
+	*/
+	public function index_modify_page_title($event)
+	{
+		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
+		if ($enabled && $this->auth->acl_get('u_karma_view'))
+		{
+			$sql = 'SELECT user_id, username, user_colour, user_karma
+				FROM ' . USERS_TABLE . '
+				WHERE user_type IN (' . USER_NORMAL . ', ' . USER_FOUNDER . ')
+					AND user_id <> ' . ANONYMOUS . '
+					AND user_karma <> 0
+				ORDER BY user_karma DESC, username_clean ASC';
+			$result = $this->db->sql_query_limit($sql, 5, 0, 300);
+
+			while ($row = $this->db->sql_fetchrow($result))
+			{
+				$this->template->assign_block_vars('karma_leaders', array(
+					'USER_FULL'		=> get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']),
+					'TOTAL_KARMA'	=> (int) $row['user_karma'],
+				));
+			}
+			$this->db->sql_freeresult($result);
+		}
+	}
+
+	/**
+	* Recalculates karma scores for all posts and users
+	*/
+	protected function resync()
+	{
+		// Recalculate post_karma for all posts
+		$sql = 'UPDATE ' . POSTS_TABLE . '
+			SET post_karma = (
+				SELECT COALESCE(SUM(vote_direction), 0)
+				FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE post_id = ' . POSTS_TABLE . '.post_id
+			)';
+		$this->db->sql_query($sql);
+
+		// Recalculate user_karma for all users
+		$sql = 'UPDATE ' . USERS_TABLE . '
+			SET user_karma = (
+				SELECT COALESCE(SUM(post_karma), 0)
+				FROM ' . POSTS_TABLE . '
+				WHERE poster_id = ' . USERS_TABLE . '.user_id
+			)';
+		$this->db->sql_query($sql);
 	}
 }

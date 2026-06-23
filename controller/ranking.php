@@ -106,13 +106,13 @@ class ranking
 			trigger_error('NO_PERMISSION');
 		}
 
-		// 2. Load Display Functions for Avatar helper
+		// Load Display Functions for Avatar helper
 		if (!function_exists('phpbb_get_user_avatar'))
 		{
 			include($this->root_path . 'includes/functions_display.' . $this->php_ext);
 		}
 
-		// 3. Fetch Top 50 Ranking Rows
+		// Fetch Top 50 Ranking Rows
 		$ranking_data = array();
 		$sql = 'SELECT user_id, username, user_colour, user_avatar, user_avatar_type, user_avatar_width, user_avatar_height, user_karma
 			FROM ' . USERS_TABLE . '
@@ -146,13 +146,13 @@ class ranking
 		}
 		$this->db->sql_freeresult($result);
 
-		// 4. Assign Template Loop
+		// Assign Template Loop
 		foreach ($ranking_data as $row_data)
 		{
 			$this->template->assign_block_vars('ranking_row', $row_data);
 		}
 
-		// 5. Add Breadcrumbs (navlinks)
+		// Add Breadcrumbs (navlinks)
 		$this->template->assign_block_vars('navlinks', array(
 			'FORUM_NAME'	=> $this->user->lang('KARMA_RANKING'),
 			'U_VIEW_FORUM'	=> $this->helper->route('vinny_karma_ranking'),

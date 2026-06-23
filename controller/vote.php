@@ -100,7 +100,7 @@ class vote
 	*/
 	public function handle_vote($post_id, $type)
 	{
-		// 1. Verify Authentication
+		// Verify Authentication
 		if (!$this->user->data['is_registered'] || $this->user->data['user_id'] == ANONYMOUS)
 		{
 			return new JsonResponse(array(
@@ -112,7 +112,7 @@ class vote
 
 		$user_id = (int) $this->user->data['user_id'];
 
-		// 2. Validate CSRF via link hash
+		// Validate CSRF via link hash
 		$hash = $this->request->variable('hash', '');
 		if (empty($hash) || !check_link_hash($hash, 'vinny_karma'))
 		{
@@ -123,7 +123,7 @@ class vote
 			));
 		}
 
-		// 3. Fetch Post Details
+		// Fetch Post Details
 		$sql = 'SELECT poster_id, forum_id, topic_id, post_karma
 			FROM ' . POSTS_TABLE . '
 			WHERE post_id = ' . (int) $post_id;
@@ -140,7 +140,7 @@ class vote
 			));
 		}
 
-		// 3.1. Verify Extension Enabled Config
+		// Verify Extension Enabled Config
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
 		if (!$enabled)
 		{
@@ -151,7 +151,7 @@ class vote
 			));
 		}
 
-		// 3.2. Verify Forum is Not Excluded
+		// Verify Forum is Not Excluded
 		$excluded_forums = isset($this->config['vinny_karma_excluded_forums']) && $this->config['vinny_karma_excluded_forums'] !== '' ? explode(',', $this->config['vinny_karma_excluded_forums']) : array();
 		if (in_array((int) $post['forum_id'], $excluded_forums))
 		{
@@ -162,7 +162,7 @@ class vote
 			));
 		}
 
-		// 3.3. Verify Downvotes are Enabled if Type is Downvote
+		// Verify Downvotes are Enabled if Type is Downvote
 		$enable_downvote = isset($this->config['vinny_karma_enable_downvote']) ? (bool) $this->config['vinny_karma_enable_downvote'] : true;
 		if ($type === 'down' && !$enable_downvote)
 		{
@@ -175,7 +175,7 @@ class vote
 
 		$poster_id = (int) $post['poster_id'];
 
-		// 4. Validate Global Permission
+		// Validate Global Permission
 		if (!$this->auth->acl_get('u_karma_vote'))
 		{
 			return new JsonResponse(array(
@@ -185,7 +185,7 @@ class vote
 			));
 		}
 
-		// 5. Prevent Self-Voting
+		// Prevent Self-Voting
 		if ($user_id === $poster_id)
 		{
 			return new JsonResponse(array(
@@ -195,7 +195,7 @@ class vote
 			));
 		}
 
-		// 6. Anti-Flood Control (using custom config for voting flood interval)
+		// Anti-Flood Control (using custom config for voting flood interval)
 		$flood_interval = isset($this->config['vinny_karma_flood_interval']) ? (int) $this->config['vinny_karma_flood_interval'] : 0;
 		if ($flood_interval > 0)
 		{
@@ -225,7 +225,7 @@ class vote
 		// Determine new requested vote direction
 		$new_direction = ($type === 'up') ? 1 : -1;
 
-		// 7. Get Existing Vote
+		// Get Existing Vote
 		$sql = 'SELECT vote_id, vote_direction
 			FROM ' . $this->table_prefix . 'vinny_karma_votes
 			WHERE post_id = ' . (int) $post_id . '
@@ -274,7 +274,7 @@ class vote
 		{
 			// A. Update Post Karma
 			$sql = 'UPDATE ' . POSTS_TABLE . '
-				SET post_karma = post_karma + ' . $karma_diff . '
+				SET post_karma = post_karma + ' . (int) $karma_diff . '
 				WHERE post_id = ' . (int) $post_id;
 			$this->db->sql_query($sql);
 
@@ -321,7 +321,7 @@ class vote
 			));
 		}
 
-		// 8. Trigger Notification (if new vote is cast and author is not guest)
+		// Trigger Notification (if new vote is cast and author is not guest)
 		if ($vote_direction !== 0 && $poster_id !== ANONYMOUS)
 		{
 			$this->notification_manager->add_notifications('vinny.karma.notification.type.karma_vote', array(
@@ -367,13 +367,13 @@ class vote
 	*/
 	public function reset_post_karma($post_id)
 	{
-		// 1. Verify moderator permission
+		// Verify moderator permission
 		if (!$this->auth->acl_get('m_karma_manage'))
 		{
 			trigger_error('NO_PERMISSION', E_USER_WARNING);
 		}
 
-		// 2. Validate CSRF via link hash
+		// Validate CSRF via link hash
 		$hash = $this->request->variable('hash', '');
 		if (empty($hash) || !check_link_hash($hash, 'vinny_karma'))
 		{
@@ -382,8 +382,8 @@ class vote
 
 		$post_id = (int) $post_id;
 
-		// 3. Fetch Post and Author Details
-		$sql = 'SELECT poster_id, topic_id
+		// Fetch Post and Author Details
+		$sql = 'SELECT poster_id, topic_id, forum_id
 			FROM ' . POSTS_TABLE . '
 			WHERE post_id = ' . (int) $post_id;
 		$result = $this->db->sql_query($sql);
@@ -449,9 +449,9 @@ class vote
 
 				// Log to moderator logs
 				$this->log->add('mod', $this->user->data['user_id'], $this->user->ip, 'LOG_MCP_KARMA_RESET_POST', time(), array(
-					'forum_id'	=> 0,
-					'topic_id'	=> 0,
-					$post_id,
+					'forum_id'	=> (int) $post['forum_id'],
+					'topic_id'	=> (int) $post['topic_id'],
+					'post_id'	=> (int) $post_id,
 					$poster_name
 				));
 			}

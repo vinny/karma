@@ -64,4 +64,12 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_AUDIT_UP'					=> 'Upvote',
 	'VINNY_KARMA_AUDIT_DOWN'				=> 'Downvote',
 	'VINNY_KARMA_AUDIT_EMPTY'				=> 'No votes have been recorded in the database yet.',
+
+	'VINNY_KARMA_PRUNE_INVALID_DAYS'		=> 'Please enter a valid number of days (greater than 0).',
+	'VINNY_KARMA_CONFIRM_PRUNE'				=> 'Are you sure you want to prune all vote logs older than %d days? This action cannot be undone.',
+
+	// Admin logs
+	'LOG_ACP_KARMA_RESYNC'					=> '<strong>Karma System: Resynchronized all karma scores</strong>',
+	'LOG_ACP_KARMA_RESET_USER'				=> '<strong>Karma System: Reset karma score and history for user</strong><br />» %s',
+	'LOG_ACP_KARMA_PRUNE'					=> '<strong>Karma System: Pruned old vote logs</strong><br />» Removed logs older than %d days (%d entries deleted)',
 ));
