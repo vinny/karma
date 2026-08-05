@@ -4,7 +4,6 @@
 	"description": "Karma score upvote/downvote system for posts",
 	"homepage": "https://github.com/vinny",
 	"version": "1.0.0",
-	"time": "2026-05-29",
 	"keywords": [
 		"phpbb",
 		"extension",

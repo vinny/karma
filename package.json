@@ -1,0 +1,15 @@
+{
+  "name": "vinny-karma",
+  "version": "1.0.0",
+  "description": "Karma score upvote/downvote system for posts - CSS and JS Linting",
+  "scripts": {
+    "test": "npm run lint:js && npm run lint:css",
+    "lint:js": "npx --no-install eslint \"styles/**/*.js\"",
+    "lint:css": "npx --no-install stylelint \"styles/**/*.css\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "stylelint": "^15.11.0",
+    "stylelint-config-standard": "^34.0.0"
+  }
+}

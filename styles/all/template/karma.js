@@ -23,6 +23,8 @@
 
 	// Register phpBB AJAX callback for voting
 	phpbb.addAjaxCallback('vinny_karma_vote', function(res) {
+		var $config = $('#karma-config');
+
 		if (res.status === 'success') {
 			var $panel = $(this).closest('.karma-panel');
 			
@@ -41,7 +43,6 @@
 
 			// Update author's karma score in all profiles on the page
 			if (res.poster_id) {
-				var $config = $('#karma-config');
 				var langKarma = $config.attr('data-lang-karma') || '';
 
 				$('.postprofile').each(function() {
@@ -80,7 +81,6 @@
 			// Reset voted classes and apply the new state
 			$panel.removeClass('voted-up voted-down');
 
-			var $config = $('#karma-config');
 			var $upvoteBtn = $panel.find('.karma-upvote');
 			var $downvoteBtn = $panel.find('.karma-downvote');
 			var upvoteUrl = $upvoteBtn.attr('data-vote-url');
@@ -150,7 +150,6 @@
 			}
 		} else {
 			// Get fallback language strings from data attributes
-			var $config = $('#karma-config');
 			var errorLang = $(this).attr('data-lang-error');
 			var errorMsg = res.message || errorLang || $config.attr('data-lang-error-message') || '';
 			var errorTitle = res.title || $config.attr('data-lang-error-title') || '';
