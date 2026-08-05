@@ -50,6 +50,9 @@ class listener implements EventSubscriberInterface
 	/** @var array|null */
 	protected $user_votes = null;
 
+	/** @var array|null */
+	protected $excluded_forums = null;
+
 	/**
 	* Constructor
 	*
@@ -166,11 +169,18 @@ class listener implements EventSubscriberInterface
 		$forum_id = isset($row['forum_id']) ? (int) $row['forum_id'] : 0;
 
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
-		$excluded_forums = isset($this->config['vinny_karma_excluded_forums']) && $this->config['vinny_karma_excluded_forums'] !== '' ? explode(',', $this->config['vinny_karma_excluded_forums']) : array();
+
+		if ($this->excluded_forums === null)
+		{
+			$raw_excluded = isset($this->config['vinny_karma_excluded_forums']) ? (string) $this->config['vinny_karma_excluded_forums'] : '';
+			$this->excluded_forums = ($raw_excluded !== '') ? array_flip(array_map('intval', explode(',', $raw_excluded))) : array();
+		}
+
+		$is_excluded = isset($this->excluded_forums[$forum_id]);
 
 		// Keep track of permissions
-		$can_view = $enabled && !in_array($forum_id, $excluded_forums) && $this->auth->acl_get('u_karma_view');
-		$can_vote = $enabled && !in_array($forum_id, $excluded_forums) && $this->auth->acl_get('u_karma_vote');
+		$can_view = $enabled && !$is_excluded && $this->auth->acl_get('u_karma_view');
+		$can_vote = $enabled && !$is_excluded && $this->auth->acl_get('u_karma_vote');
 
 		// Assign global template variable for script/stylesheet inclusion checks
 		static $global_assigned = false;
@@ -199,14 +209,11 @@ class listener implements EventSubscriberInterface
 			$this->user_votes = array();
 			if ($is_registered)
 			{
-				$sql = 'SELECT post_id, vote_direction
-					FROM ' . $this->table_prefix . 'vinny_karma_votes
-					WHERE user_id = ' . (int) $this->user->data['user_id'] . '
-						AND post_id IN (
-							SELECT post_id
-							FROM ' . POSTS_TABLE . '
-							WHERE topic_id = ' . (int) $topic_id . '
-						)';
+				$sql = 'SELECT v.post_id, v.vote_direction
+					FROM ' . $this->table_prefix . 'vinny_karma_votes v
+					INNER JOIN ' . POSTS_TABLE . ' p ON (v.post_id = p.post_id)
+					WHERE v.user_id = ' . (int) $this->user->data['user_id'] . '
+						AND p.topic_id = ' . (int) $topic_id;
 				$result = $this->db->sql_query($sql);
 				while ($vote = $this->db->sql_fetchrow($result))
 				{

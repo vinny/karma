@@ -55,6 +55,7 @@ class tables extends \phpbb\db\migration\migration
 					'PRIMARY_KEY' => 'vote_id',
 					'KEYS' => array(
 						'post_user' => array('UNIQUE', array('post_id', 'user_id')),
+						'user_id'	=> array('INDEX', 'user_id'),
 					),
 				),
 			),

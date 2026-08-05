@@ -1,7 +1,6 @@
 # Dependencies
 /node_modules/
 /vendor/
-package-lock.json
 
 # Build and Cache files
 .phpunit.result.cache
