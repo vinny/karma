@@ -28,6 +28,9 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MAINTENANCE_TITLE'			=> 'Karma Maintenance',
 	'VINNY_KARMA_MAINTENANCE_EXPLAIN'		=> 'Perform database maintenance tasks like resyncing user/post karma scores, resetting user scores, pruning logs, and viewing the vote audit trail.',
 
+	'KARMA_SUPPORT_STAR'					=> 'If you find this extension useful, consider starring it on <a href="https://github.com/vinny/karma" target="_blank" rel="noopener"><i class="icon fa fa-github fa-fw" aria-hidden="true"></i>GitHub</a>.',
+	'KARMA_SUPPORT_DONATE'					=> 'You can also support its development with an optional <a href="https://ko-fi.com/vinny1" target="_blank" rel="noopener"><i class="icon fa fa-heart fa-fw" aria-hidden="true"></i>donation</a>.',
+
 	'VINNY_KARMA_ENABLED'					=> 'Enable Karma System',
 	'VINNY_KARMA_ENABLED_EXPLAIN'			=> 'Globally enable or disable karma displays, voting buttons, and calculations.',
 	'VINNY_KARMA_ENABLE_DOWNVOTE'			=> 'Enable Downvotes',
