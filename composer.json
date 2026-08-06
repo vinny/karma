@@ -1,7 +1,7 @@
 {
 	"name": "vinny/karma",
 	"type": "phpbb-extension",
-	"description": "Karma score upvote/downvote system for posts",
+	"description": "Karma System adds post voting to phpBB, letting members upvote or downvote posts and highlighting active contributors across your board",
 	"homepage": "https://github.com/vinny",
 	"version": "1.0.0",
 	"keywords": [
@@ -24,6 +24,11 @@
 		"display-name": "Karma System",
 		"soft-require": {
 			"phpbb/phpbb": "^3.3.0"
+		},
+		"version-check": {
+			"host": "www.phpbb.com",
+			"directory": "/customise/db/extension/karma",
+			"filename": "version_check"
 		}
 	}
 }
