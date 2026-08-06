@@ -3,7 +3,7 @@
 *
 * Karma System extension for the phpBB Forum Software package.
 *
-* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @copyright (c) Vinny <https://github.com/vinny>
 * @license GNU General Public License, version 2 (GPL-2.0)
 *
 */

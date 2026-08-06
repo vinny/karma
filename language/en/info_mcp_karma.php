@@ -3,7 +3,7 @@
 *
 * Karma System extension for the phpBB Forum Software package.
 *
-* @copyright (c) _Vinny_ <https://github.com/vinny>
+* @copyright (c) Vinny <https://github.com/vinny>
 * @license GNU General Public License, version 2 (GPL-2.0)
 *
 */
@@ -20,23 +20,23 @@ if (empty($lang) || !is_array($lang))
 
 $lang = array_merge($lang, array(
 	'MCP_KARMA'							=> 'Karma',
-	'MCP_KARMA_USER'					=> 'Front page',
+	'MCP_KARMA_USER'					=> 'Overview',
 	'MCP_KARMA_USER_DETAILS'			=> 'User details',
 	'ACL_M_KARMA_MANAGE'				=> 'Can moderate user karma',
 
 
 	'VINNY_KARMA_MCP_RESET'				=> 'Reset',
-	'VINNY_KARMA_MCP_RESET_RECEIVED'	=> 'Reset Received Karma',
-	'VINNY_KARMA_MCP_RESET_CAST'		=> 'Reset Cast Karma',
-	'VINNY_KARMA_MCP_RESET_ACTIONS'			=> 'Reset Actions',
+	'VINNY_KARMA_MCP_RESET_RECEIVED'	=> 'Reset received karma',
+	'VINNY_KARMA_MCP_RESET_CAST'		=> 'Reset cast karma',
+	'VINNY_KARMA_MCP_RESET_ACTIONS'			=> 'Reset actions',
 	'VINNY_KARMA_MCP_RESET_ACTIONS_EXPLAIN'	=> 'You can reset karma received or cast by this user. These actions are destructive and will modify vote history logs.',
 	'VINNY_KARMA_MCP_RESET_RECEIVED_EXPLAIN' => 'Delete all votes cast by other users on posts authored by this user, resetting their post scores.',
 	'VINNY_KARMA_MCP_RESET_CAST_EXPLAIN'	=> 'Delete all votes cast by this user on posts authored by other users.',
-	'VINNY_KARMA_MCP_ADJUST_BALANCE'	=> 'Adjust Karma Balance',
+	'VINNY_KARMA_MCP_ADJUST_BALANCE'	=> 'Adjust karma balance',
 	'VINNY_KARMA_MCP_ADJUST_BALANCE_EXPLAIN' => 'You can manually add or subtract points to the user’s total karma balance. This will directly modify their profile score.',
-	'VINNY_KARMA_MCP_ADJUST_AMOUNT'		=> 'Adjustment Amount',
+	'VINNY_KARMA_MCP_ADJUST_AMOUNT'		=> 'Adjustment amount',
 	'VINNY_KARMA_MCP_ADJUST_AMOUNT_EXP'	=> 'Use negative numbers to subtract (e.g. -5) or positive to add (e.g. 10).',
-	'VINNY_KARMA_MCP_REASON'			=> 'Moderation Reason',
+	'VINNY_KARMA_MCP_REASON'			=> 'Moderation reason',
 	'VINNY_KARMA_MCP_REASON_EXP'		=> 'Provide a reason for the log entry.',
 	'VINNY_KARMA_MCP_VOTER'				=> 'Voter',
 	'VINNY_KARMA_MCP_POST_AUTHOR'		=> 'Author',
