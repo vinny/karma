@@ -1,8 +1,5 @@
+{% INCLUDECSS '@vinny_karma/karma.css' %}
 {% INCLUDE 'overall_header.html' %}
-{% if not definition.INCLUDED_KARMA_CSS %}
-	{% INCLUDECSS '@vinny_karma/karma.css' %}
-	{% DEFINE INCLUDED_KARMA_CSS = true %}
-{% endif %}
 
 <h2 class="solo">{{ lang('KARMA_RANKING') }}</h2>
 

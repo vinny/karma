@@ -108,4 +108,51 @@ class vote_test extends \phpbb_test_case
 		$this->assertEquals('error', $data['status']);
 		$this->assertEquals('FORM_INVALID', $data['message']);
 	}
+
+	public function test_handle_vote_no_forum_read_permission()
+	{
+		$this->user->data = array(
+			'is_registered' => true,
+			'user_id' => 2,
+			'user_form_salt' => 'some_salt',
+		);
+
+		$this->user->expects($this->any())
+			->method('lang')
+			->will($this->returnCallback(function($key) {
+				return $key;
+			}));
+
+		$valid_hash = generate_link_hash('vinny_karma');
+
+		$this->request->expects($this->once())
+			->method('variable')
+			->with('hash', '')
+			->willReturn($valid_hash);
+
+		$this->db->expects($this->once())
+			->method('sql_query')
+			->willReturn('result_resource');
+
+		$this->db->expects($this->once())
+			->method('sql_fetchrow')
+			->willReturn(array(
+				'poster_id' => 10,
+				'forum_id' => 5,
+				'topic_id' => 20,
+				'post_karma' => 0,
+			));
+
+		$this->auth->expects($this->once())
+			->method('acl_get')
+			->with('f_read', 5)
+			->willReturn(false);
+
+		$response = $this->controller->handle_vote(123, 'up');
+		$this->assertInstanceOf('\Symfony\Component\HttpFoundation\JsonResponse', $response);
+
+		$data = json_decode($response->getContent(), true);
+		$this->assertEquals('error', $data['status']);
+		$this->assertEquals('KARMA_ERROR_NO_PERMISSION', $data['message']);
+	}
 }

@@ -60,9 +60,9 @@ $lang = array_merge($lang, array(
 	'LOG_KARMA_EXCEPTION'					=> 'Karma System error: %s',
 
 	// Moderator logs
-	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Reset user received karma</strong><br />» %s',
-	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Reset user cast votes</strong><br />» %s',
-	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Adjusted user karma score</strong><br />» %s (Adjustment: %d)',
+	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Reset user received karma</strong><br />» User: %s',
+	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Reset user cast votes</strong><br />» User: %s',
+	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Adjusted user karma score</strong><br />» User: %1$s (Adjustment: %2$d, Reason: %3$s)',
 	'LOG_MCP_KARMA_RESET_POST'			=> '<strong>Reset post karma score</strong><br />» Author: %s',
 ));
 

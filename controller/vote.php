@@ -140,6 +140,16 @@ class vote
 			));
 		}
 
+		// Verify Forum Read Permission
+		if (!$this->auth->acl_get('f_read', (int) $post['forum_id']))
+		{
+			return new JsonResponse(array(
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_NO_PERMISSION')
+			));
+		}
+
 		// Verify Extension Enabled Config
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
 		if (!$enabled)
@@ -393,6 +403,12 @@ class vote
 		if (!$post)
 		{
 			trigger_error('NO_POST', E_USER_WARNING);
+		}
+
+		// Verify Forum Read Permission
+		if (!$this->auth->acl_get('f_read', (int) $post['forum_id']))
+		{
+			trigger_error('NO_PERMISSION', E_USER_WARNING);
 		}
 
 		$poster_id = (int) $post['poster_id'];

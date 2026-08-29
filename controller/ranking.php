@@ -152,6 +152,10 @@ class ranking
 			$this->template->assign_block_vars('ranking_row', $row_data);
 		}
 
+		$this->template->assign_vars(array(
+			'S_IS_KARMA_RANKING_PAGE' => true,
+		));
+
 		// Add Breadcrumbs (navlinks)
 		$this->template->assign_block_vars('navlinks', array(
 			'FORUM_NAME'	=> $this->user->lang('KARMA_RANKING'),

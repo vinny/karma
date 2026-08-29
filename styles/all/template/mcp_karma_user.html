@@ -1,8 +1,5 @@
+{% INCLUDECSS '@vinny_karma/karma.css' %}
 {% include 'mcp_header.html' %}
-{% if not definition.INCLUDED_KARMA_CSS %}
-	{% INCLUDECSS '@vinny_karma/karma.css' %}
-	{% DEFINE INCLUDED_KARMA_CSS = true %}
-{% endif %}
 
 <form method="post" id="mcp" action="{{ U_POST_ACTION }}">
 

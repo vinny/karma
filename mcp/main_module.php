@@ -313,8 +313,9 @@ class main_module
 							$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_ADJUST', time(), array(
 								'forum_id' => 0,
 								'topic_id' => 0,
-								$userrow['username'] . ($reason ? ' (' . $reason . ')' : ''),
-								$adjustment
+								$userrow['username'],
+								(int) $adjustment,
+								utf8_htmlspecialchars($reason),
 							));
 
 							meta_refresh(3, $this->u_action);

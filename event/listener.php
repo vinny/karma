@@ -111,6 +111,7 @@ class listener implements EventSubscriberInterface
 			'core.delete_user_before'							=> 'delete_user_before',
 			'core.delete_posts_after'							=> 'delete_posts_after',
 			'core.index_modify_page_title'						=> 'index_modify_page_title',
+			'core.ucp_pm_view_message'							=> 'ucp_pm_view_message',
 		);
 	}
 
@@ -187,7 +188,7 @@ class listener implements EventSubscriberInterface
 		if (!$global_assigned)
 		{
 			$this->template->assign_vars(array(
-				'S_SHOW_KARMA' => $can_view,
+				'S_VIEWTOPIC_KARMA' => $can_view,
 				'S_KARMA_ENABLE_DOWNVOTE' => isset($this->config['vinny_karma_enable_downvote']) ? (bool) $this->config['vinny_karma_enable_downvote'] : true,
 				'L_KARMA_UPVOTE' => $this->user->lang('KARMA_UPVOTE'),
 				'L_KARMA_DOWNVOTE' => $this->user->lang('KARMA_DOWNVOTE'),
@@ -278,6 +279,42 @@ class listener implements EventSubscriberInterface
 	}
 
 	/**
+	* Inject author karma in PM view message
+	*
+	* @param \phpbb\event\data $event
+	*/
+	public function ucp_pm_view_message($event)
+	{
+		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
+		if ($enabled && $this->auth->acl_get('u_karma_view'))
+		{
+			$user_info = isset($event['user_info']) ? $event['user_info'] : array();
+			$msg_data = isset($event['msg_data']) ? $event['msg_data'] : array();
+
+			$author_id = isset($user_info['user_id']) ? (int) $user_info['user_id'] : (isset($msg_data['author_id']) ? (int) $msg_data['author_id'] : 0);
+
+			if ($author_id && $author_id != ANONYMOUS)
+			{
+				$author_karma = isset($user_info['user_karma']) ? (int) $user_info['user_karma'] : 0;
+				if (!isset($user_info['user_karma']))
+				{
+					$sql = 'SELECT user_karma
+						FROM ' . USERS_TABLE . '
+						WHERE user_id = ' . (int) $author_id;
+					$result = $this->db->sql_query($sql);
+					$author_karma = (int) $this->db->sql_fetchfield('user_karma');
+					$this->db->sql_freeresult($result);
+				}
+
+				$this->template->assign_vars(array(
+					'AUTHOR_KARMA'    => $author_karma,
+					'S_SHOW_PM_KARMA' => ($author_karma != 0),
+				));
+			}
+		}
+	}
+
+	/**
 	* Cache post karma in viewtopic rowset
 	*
 	* @param \phpbb\event\data $event
@@ -315,11 +352,18 @@ class listener implements EventSubscriberInterface
 	public function page_header($event)
 	{
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
-		if ($enabled && $this->auth->acl_get('u_karma_ranking'))
+		if ($enabled)
 		{
 			$this->template->assign_vars(array(
-				'S_ALLOW_KARMA_RANKING'	=> true,
-				'U_KARMA_RANKING'		=> $this->helper->route('vinny_karma_ranking'),
+				'S_KARMA_ENABLED'           => true,
+				'S_KARMA_ENABLE_DOWNVOTE'   => isset($this->config['vinny_karma_enable_downvote']) ? (bool) $this->config['vinny_karma_enable_downvote'] : true,
+				'L_KARMA_UPVOTE'            => $this->user->lang('KARMA_UPVOTE'),
+				'L_KARMA_DOWNVOTE'          => $this->user->lang('KARMA_DOWNVOTE'),
+				'L_KARMA_ALREADY_VOTED_UP'  => $this->user->lang('KARMA_ALREADY_VOTED_UP'),
+				'L_KARMA_ALREADY_VOTED_DOWN' => $this->user->lang('KARMA_ALREADY_VOTED_DOWN'),
+				'L_KARMA_ERROR_VOTE_FAILED' => $this->user->lang('KARMA_ERROR_VOTE_FAILED'),
+				'S_ALLOW_KARMA_RANKING'     => $this->auth->acl_get('u_karma_ranking'),
+				'U_KARMA_RANKING'           => $this->helper->route('vinny_karma_ranking'),
 			));
 		}
 	}
