@@ -37,16 +37,14 @@ $lang = array_merge($lang, array(
 
 	// Notifications
 	'NOTIFICATION_TYPE_KARMA_VOTE'	=> 'Alguém votou na sua mensagem',
-	'NOTIFICATION_KARMA_VOTE_UP'	=> '<strong>%1$s</strong> votou a favor da sua mensagem em <strong>%2$s</strong>.',
-	'NOTIFICATION_KARMA_VOTE_DOWN'	=> '<strong>%1$s</strong> votou contra a sua mensagem em <strong>%2$s</strong>.',
+	'NOTIFICATION_KARMA_UPVOTE'		=> '<strong>%1$s</strong> votou a favor da sua mensagem.',
+	'NOTIFICATION_KARMA_DOWNVOTE'	=> '<strong>%1$s</strong> votou contra a sua mensagem.',
 
 	// Ranking page
 	'KARMA_RANKING'					=> 'Classificação de karma',
-	'KARMA_RANKING_EXPLAIN'			=> 'Esta página lista os membros com maior pontuação acumulada de karma no fórum.',
-	'KARMA_TOP_USERS'				=> 'Utilizadores em destaque',
-	'KARMA_POSITION'				=> 'Posição',
+	'KARMA_POSITION'				=> '#',
 	'KARMA_USER'					=> 'Utilizador',
-	'KARMA_SCORE'					=> 'Pontuação de karma',
+	'KARMA_TOTAL'					=> 'Total de karma',
 	'KARMA_RANK_GOLD'				=> '1º lugar',
 	'KARMA_RANK_SILVER'				=> '2º lugar',
 	'KARMA_RANK_BRONZE'				=> '3º lugar',

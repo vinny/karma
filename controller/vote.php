@@ -20,9 +20,6 @@ class vote
 	/** @var \phpbb\auth\auth */
 	protected $auth;
 
-	/** @var \phpbb\controller\helper */
-	protected $helper;
-
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -54,19 +51,18 @@ class vote
 	* Constructor
 	*
 	* @param \phpbb\auth\auth $auth
-	* @param \phpbb\controller\helper $helper
 	* @param \phpbb\db\driver\driver_interface $db
 	* @param \phpbb\request\request $request
 	* @param \phpbb\user $user
 	* @param \phpbb\notification\manager $notification_manager
 	* @param \phpbb\config\config $config
+	* @param \phpbb\log\log $log
 	* @param string $root_path
 	* @param string $php_ext
 	* @param string $table_prefix
 	*/
 	public function __construct(
 		\phpbb\auth\auth $auth,
-		\phpbb\controller\helper $helper,
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\request\request $request,
 		\phpbb\user $user,
@@ -79,7 +75,6 @@ class vote
 	)
 	{
 		$this->auth = $auth;
-		$this->helper = $helper;
 		$this->db = $db;
 		$this->request = $request;
 		$this->user = $user;

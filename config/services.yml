@@ -5,7 +5,6 @@ services:
             - '@auth'
             - '@controller.helper'
             - '@dbal.conn'
-            - '@request'
             - '@template'
             - '@user'
             - '@config'
@@ -19,7 +18,6 @@ services:
         class: vinny\karma\controller\vote
         arguments:
             - '@auth'
-            - '@controller.helper'
             - '@dbal.conn'
             - '@request'
             - '@user'
@@ -36,14 +34,11 @@ services:
             - '@auth'
             - '@controller.helper'
             - '@dbal.conn'
-            - '@request'
             - '@template'
             - '@user'
-            - '@pagination'
             - '@config'
             - '%core.root_path%'
             - '%core.php_ext%'
-            - '%core.table_prefix%'
 
     vinny.karma.notification.type.karma_vote:
         class: vinny\karma\notification\type\karma_vote
@@ -52,5 +47,4 @@ services:
         tags:
             - { name: notification.type }
         calls:
-            - ['set_helper', ['@controller.helper']]
             - ['set_user_loader', ['@user_loader']]

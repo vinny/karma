@@ -26,9 +26,6 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
-	/** @var \phpbb\request\request */
-	protected $request;
-
 	/** @var \phpbb\template\template */
 	protected $template;
 
@@ -59,7 +56,6 @@ class listener implements EventSubscriberInterface
 	* @param \phpbb\auth\auth $auth
 	* @param \phpbb\controller\helper $helper
 	* @param \phpbb\db\driver\driver_interface $db
-	* @param \phpbb\request\request $request
 	* @param \phpbb\template\template $template
 	* @param \phpbb\user $user
 	* @param \phpbb\config\config $config
@@ -71,7 +67,6 @@ class listener implements EventSubscriberInterface
 		\phpbb\auth\auth $auth,
 		\phpbb\controller\helper $helper,
 		\phpbb\db\driver\driver_interface $db,
-		\phpbb\request\request $request,
 		\phpbb\template\template $template,
 		\phpbb\user $user,
 		\phpbb\config\config $config,
@@ -83,7 +78,6 @@ class listener implements EventSubscriberInterface
 		$this->auth = $auth;
 		$this->helper = $helper;
 		$this->db = $db;
-		$this->request = $request;
 		$this->template = $template;
 		$this->user = $user;
 		$this->config = $config;

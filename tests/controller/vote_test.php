@@ -14,7 +14,6 @@ class vote_test extends \phpbb_test_case
 {
 	protected $controller;
 	protected $auth;
-	protected $helper;
 	protected $db;
 	protected $request;
 	protected $user;
@@ -27,8 +26,6 @@ class vote_test extends \phpbb_test_case
 		parent::setUp();
 
 		$this->auth = $this->getMockBuilder('\phpbb\auth\auth')
-			->disableOriginalConstructor()->getMock();
-		$this->helper = $this->getMockBuilder('\phpbb\controller\helper')
 			->disableOriginalConstructor()->getMock();
 		$this->db = $this->getMockBuilder('\phpbb\db\driver\driver_interface')
 			->disableOriginalConstructor()->getMock();
@@ -45,7 +42,6 @@ class vote_test extends \phpbb_test_case
 
 		$this->controller = new \vinny\karma\controller\vote(
 			$this->auth,
-			$this->helper,
 			$this->db,
 			$this->request,
 			$this->user,

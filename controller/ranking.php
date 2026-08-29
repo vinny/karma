@@ -26,17 +26,11 @@ class ranking
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
-	/** @var \phpbb\request\request */
-	protected $request;
-
 	/** @var \phpbb\template\template */
 	protected $template;
 
 	/** @var \phpbb\user */
 	protected $user;
-
-	/** @var \phpbb\pagination */
-	protected $pagination;
 
 	/** @var \phpbb\config\config */
 	protected $config;
@@ -47,49 +41,37 @@ class ranking
 	/** @var string */
 	protected $php_ext;
 
-	/** @var string */
-	protected $table_prefix;
-
 	/**
 	* Constructor
 	*
 	* @param \phpbb\auth\auth $auth
 	* @param \phpbb\controller\helper $helper
 	* @param \phpbb\db\driver\driver_interface $db
-	* @param \phpbb\request\request $request
 	* @param \phpbb\template\template $template
 	* @param \phpbb\user $user
-	* @param \phpbb\pagination $pagination
 	* @param \phpbb\config\config $config
 	* @param string $root_path
 	* @param string $php_ext
-	* @param string $table_prefix
 	*/
 	public function __construct(
 		\phpbb\auth\auth $auth,
 		\phpbb\controller\helper $helper,
 		\phpbb\db\driver\driver_interface $db,
-		\phpbb\request\request $request,
 		\phpbb\template\template $template,
 		\phpbb\user $user,
-		\phpbb\pagination $pagination,
 		\phpbb\config\config $config,
 		$root_path,
-		$php_ext,
-		$table_prefix
+		$php_ext
 	)
 	{
 		$this->auth = $auth;
 		$this->helper = $helper;
 		$this->db = $db;
-		$this->request = $request;
 		$this->template = $template;
 		$this->user = $user;
-		$this->pagination = $pagination;
 		$this->config = $config;
 		$this->root_path = $root_path;
 		$this->php_ext = $php_ext;
-		$this->table_prefix = $table_prefix;
 	}
 
 	/**

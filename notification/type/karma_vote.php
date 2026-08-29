@@ -15,21 +15,8 @@ namespace vinny\karma\notification\type;
 */
 class karma_vote extends \phpbb\notification\type\base
 {
-	/** @var \phpbb\controller\helper */
-	protected $helper;
-
 	/** @var \phpbb\user_loader */
 	protected $user_loader;
-
-	/**
-	* Set controller helper
-	*
-	* @param \phpbb\controller\helper $helper
-	*/
-	public function set_helper(\phpbb\controller\helper $helper)
-	{
-		$this->helper = $helper;
-	}
 
 	/**
 	* Set user loader
