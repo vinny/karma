@@ -17,8 +17,7 @@
 		}
 	],
 	"require": {
-		"php": ">=7.2.0",
-		"phpbb/phpbb": ">=3.3.0"
+		"php": ">=7.2.0"
 	},
 	"extra": {
 		"display-name": "Karma System",
