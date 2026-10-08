@@ -14,6 +14,7 @@ class vote_test extends \phpbb_test_case
 {
 	protected $controller;
 	protected $auth;
+	protected $content_visibility;
 	protected $db;
 	protected $request;
 	protected $user;
@@ -26,6 +27,8 @@ class vote_test extends \phpbb_test_case
 		parent::setUp();
 
 		$this->auth = $this->getMockBuilder('\phpbb\auth\auth')
+			->disableOriginalConstructor()->getMock();
+		$this->content_visibility = $this->getMockBuilder('\phpbb\content_visibility')
 			->disableOriginalConstructor()->getMock();
 		$this->db = $this->getMockBuilder('\phpbb\db\driver\driver_interface')
 			->disableOriginalConstructor()->getMock();
@@ -42,6 +45,7 @@ class vote_test extends \phpbb_test_case
 
 		$this->controller = new \vinny\karma\controller\vote(
 			$this->auth,
+			$this->content_visibility,
 			$this->db,
 			$this->request,
 			$this->user,
@@ -55,6 +59,22 @@ class vote_test extends \phpbb_test_case
 
 		global $user;
 		$user = $this->user;
+	}
+
+	public function test_handle_vote_invalid_type()
+	{
+		$this->user->expects($this->any())
+			->method('lang')
+			->will($this->returnCallback(function($key) {
+				return $key;
+			}));
+
+		$response = $this->controller->handle_vote(123, 'invalid');
+		$this->assertInstanceOf('\Symfony\Component\HttpFoundation\JsonResponse', $response);
+
+		$data = json_decode($response->getContent(), true);
+		$this->assertEquals('error', $data['status']);
+		$this->assertEquals('KARMA_ERROR_VOTE_FAILED', $data['message']);
 	}
 
 	public function test_handle_vote_not_logged_in()
@@ -143,6 +163,65 @@ class vote_test extends \phpbb_test_case
 			->method('acl_get')
 			->with('f_read', 5)
 			->willReturn(false);
+
+		$response = $this->controller->handle_vote(123, 'up');
+		$this->assertInstanceOf('\Symfony\Component\HttpFoundation\JsonResponse', $response);
+
+		$data = json_decode($response->getContent(), true);
+		$this->assertEquals('error', $data['status']);
+		$this->assertEquals('KARMA_ERROR_POST_NOT_FOUND', $data['message']);
+	}
+
+	public function test_handle_vote_no_vote_permission()
+	{
+		$this->user->data = array(
+			'is_registered' => true,
+			'user_id' => 2,
+			'user_form_salt' => 'some_salt',
+		);
+
+		$this->user->expects($this->any())
+			->method('lang')
+			->will($this->returnCallback(function($key) {
+				return $key;
+			}));
+
+		$valid_hash = generate_link_hash('vinny_karma');
+
+		$this->request->expects($this->once())
+			->method('variable')
+			->with('hash', '')
+			->willReturn($valid_hash);
+
+		$this->db->expects($this->once())
+			->method('sql_query')
+			->willReturn('result_resource');
+
+		$this->db->expects($this->once())
+			->method('sql_fetchrow')
+			->willReturn(array(
+				'poster_id' => 10,
+				'forum_id' => 5,
+				'topic_id' => 20,
+				'post_karma' => 0,
+				'post_visibility' => 1,
+				'forum_password' => '',
+			));
+
+		$this->content_visibility->expects($this->once())
+			->method('is_visible')
+			->willReturn(true);
+
+		$this->auth->expects($this->exactly(2))
+			->method('acl_get')
+			->withConsecutive(
+				array('f_read', 5),
+				array('u_karma_vote')
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				false
+			);
 
 		$response = $this->controller->handle_vote(123, 'up');
 		$this->assertInstanceOf('\Symfony\Component\HttpFoundation\JsonResponse', $response);

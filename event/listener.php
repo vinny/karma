@@ -32,6 +32,9 @@ class listener implements EventSubscriberInterface
 	/** @var \phpbb\user */
 	protected $user;
 
+	/** @var \phpbb\notification\manager */
+	protected $notification_manager;
+
 	/** @var \phpbb\config\config */
 	protected $config;
 
@@ -58,6 +61,7 @@ class listener implements EventSubscriberInterface
 	* @param \phpbb\db\driver\driver_interface $db
 	* @param \phpbb\template\template $template
 	* @param \phpbb\user $user
+	* @param \phpbb\notification\manager $notification_manager
 	* @param \phpbb\config\config $config
 	* @param string $root_path
 	* @param string $php_ext
@@ -69,6 +73,7 @@ class listener implements EventSubscriberInterface
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\template\template $template,
 		\phpbb\user $user,
+		\phpbb\notification\manager $notification_manager,
 		\phpbb\config\config $config,
 		$root_path,
 		$php_ext,
@@ -80,6 +85,7 @@ class listener implements EventSubscriberInterface
 		$this->db = $db;
 		$this->template = $template;
 		$this->user = $user;
+		$this->notification_manager = $notification_manager;
 		$this->config = $config;
 		$this->root_path = $root_path;
 		$this->php_ext = $php_ext;
@@ -102,6 +108,7 @@ class listener implements EventSubscriberInterface
 			'core.memberlist_modify_view_profile_template_vars' => 'memberlist_modify_view_profile_template_vars',
 			'core.page_header'									=> 'page_header',
 			'core.modify_mcp_modules_display_option'			=> 'modify_mcp_modules_display_option',
+			'core.get_logs_modify_type'							=> 'get_logs_modify_type',
 			'core.delete_user_before'							=> 'delete_user_before',
 			'core.delete_posts_after'							=> 'delete_posts_after',
 			'core.index_modify_page_title'						=> 'index_modify_page_title',
@@ -116,12 +123,14 @@ class listener implements EventSubscriberInterface
 	*/
 	public function user_setup($event)
 	{
-		$this->user->add_lang('mcp');
-
 		$lang_set_ext = $event['lang_set_ext'];
 		$lang_set_ext[] = array(
 			'ext_name' => 'vinny/karma',
 			'lang_set' => 'karma',
+		);
+		$lang_set_ext[] = array(
+			'ext_name' => 'vinny/karma',
+			'lang_set' => 'permissions_karma',
 		);
 		$event['lang_set_ext'] = $lang_set_ext;
 	}
@@ -133,6 +142,8 @@ class listener implements EventSubscriberInterface
 	*/
 	public function add_permissions($event)
 	{
+		$this->user->add_lang_ext('vinny/karma', 'permissions_karma');
+
 		$categories = $event['categories'];
 		$categories['karma_system'] = 'ACL_CAT_KARMA_SYSTEM';
 		$event['categories'] = $categories;
@@ -380,6 +391,26 @@ class listener implements EventSubscriberInterface
 	}
 
 	/**
+	* Include global moderator actions in MCP front page log listing for karma moderators
+	*
+	* @param \phpbb\event\data $event
+	*/
+	public function get_logs_modify_type($event)
+	{
+		$forum_id = $event['forum_id'];
+
+		if ($event['mode'] === 'mod' && is_array($forum_id) && !in_array(0, $forum_id))
+		{
+			if ($this->auth->acl_get('m_karma_manage') || $this->auth->acl_get('a_'))
+			{
+				$forum_id[] = 0;
+				$event['forum_id'] = $forum_id;
+				$event['sql_additional'] = 'AND ' . $this->db->sql_in_set('l.forum_id', array_map('intval', $forum_id));
+			}
+		}
+	}
+
+	/**
 	* Clean up karma data when a user is deleted
 	*
 	* @param \phpbb\event\data $event
@@ -392,34 +423,28 @@ class listener implements EventSubscriberInterface
 			$user_ids = array_map('intval', $user_ids);
 
 			$this->db->sql_transaction('begin');
-			try
-			{
-				// Delete all votes cast by these users
-				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
-					WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
-				$this->db->sql_query($sql);
 
-				// Delete all votes received on posts authored by these users
-				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
-					WHERE post_id IN (
-						SELECT post_id
-						FROM ' . POSTS_TABLE . '
-						WHERE ' . $this->db->sql_in_set('poster_id', $user_ids) . '
-					)';
-				$this->db->sql_query($sql);
+			// Delete all votes cast by these users
+			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
+			$this->db->sql_query($sql);
 
-				// Reset post_karma to 0 on posts authored by these users
-				$sql = 'UPDATE ' . POSTS_TABLE . '
-					SET post_karma = 0
-					WHERE ' . $this->db->sql_in_set('poster_id', $user_ids);
-				$this->db->sql_query($sql);
+			// Delete all votes received on posts authored by these users
+			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE post_id IN (
+					SELECT post_id
+					FROM ' . POSTS_TABLE . '
+					WHERE ' . $this->db->sql_in_set('poster_id', $user_ids) . '
+				)';
+			$this->db->sql_query($sql);
 
-				$this->db->sql_transaction('commit');
-			}
-			catch (\Exception $e)
-			{
-				$this->db->sql_transaction('rollback');
-			}
+			// Reset post_karma to 0 on posts authored by these users
+			$sql = 'UPDATE ' . POSTS_TABLE . '
+				SET post_karma = 0
+				WHERE ' . $this->db->sql_in_set('poster_id', $user_ids);
+			$this->db->sql_query($sql);
+
+			$this->db->sql_transaction('commit');
 
 			// Recalculate all scores
 			$this->resync();
@@ -440,6 +465,23 @@ class listener implements EventSubscriberInterface
 		{
 			$post_ids = array_map('intval', $post_ids);
 
+			// Find and delete notifications for all votes of these posts
+			$sql = 'SELECT vote_id
+				FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE ' . $this->db->sql_in_set('post_id', $post_ids);
+			$result = $this->db->sql_query($sql);
+			$vote_ids = array();
+			while ($v_row = $this->db->sql_fetchrow($result))
+			{
+				$vote_ids[] = (int) $v_row['vote_id'];
+			}
+			$this->db->sql_freeresult($result);
+
+			if (!empty($vote_ids))
+			{
+				$this->notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
+			}
+
 			// Delete all votes for these posts
 			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
 				WHERE ' . $this->db->sql_in_set('post_id', $post_ids);
@@ -456,7 +498,7 @@ class listener implements EventSubscriberInterface
 			{
 				// Recalculate user_karma for the affected poster_ids
 				$sql = 'UPDATE ' . USERS_TABLE . '
-					SET user_karma = (
+					SET user_karma = user_karma_adjustment + (
 						SELECT COALESCE(SUM(post_karma), 0)
 						FROM ' . POSTS_TABLE . '
 						WHERE poster_id = ' . USERS_TABLE . '.user_id
@@ -512,7 +554,7 @@ class listener implements EventSubscriberInterface
 
 		// Recalculate user_karma for all users
 		$sql = 'UPDATE ' . USERS_TABLE . '
-			SET user_karma = (
+			SET user_karma = user_karma_adjustment + (
 				SELECT COALESCE(SUM(post_karma), 0)
 				FROM ' . POSTS_TABLE . '
 				WHERE poster_id = ' . USERS_TABLE . '.user_id

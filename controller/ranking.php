@@ -85,7 +85,7 @@ class ranking
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
 		if (!$enabled || !$this->auth->acl_get('u_karma_ranking'))
 		{
-			trigger_error('NO_PERMISSION');
+			trigger_error('NOT_AUTHORISED');
 		}
 
 		// Load Display Functions for Avatar helper

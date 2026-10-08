@@ -60,4 +60,12 @@ class database_test extends \phpbb_database_test_case
 			'Asserting that user_karma column exists in users table'
 		);
 	}
+
+	public function test_user_karma_adjustment_column_exists()
+	{
+		$this->assertTrue(
+			$this->db_tools->sql_column_exists($this->table_prefix . 'users', 'user_karma_adjustment'),
+			'Asserting that user_karma_adjustment column exists in users table'
+		);
+	}
 }

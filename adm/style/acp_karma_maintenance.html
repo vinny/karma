@@ -82,7 +82,7 @@
 						{% if votes.POST_URL %}
 							<a href="{{ votes.POST_URL }}">{{ lang('POST') }} #{{ votes.POST_ID }}</a>
 						{% else %}
-							{{ lang('POST') }} #{{ votes.POST_ID }} ({{ lang('DELETED') }})
+							{{ lang('POST') }} #{{ votes.POST_ID }} ({{ lang('VINNY_KARMA_AUDIT_POST_DELETED') }})
 						{% endif %}
 					</td>
 					<td>{{ votes.DATE }}</td>

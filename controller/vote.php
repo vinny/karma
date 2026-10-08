@@ -20,6 +20,9 @@ class vote
 	/** @var \phpbb\auth\auth */
 	protected $auth;
 
+	/** @var \phpbb\content_visibility */
+	protected $content_visibility;
+
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -51,6 +54,7 @@ class vote
 	* Constructor
 	*
 	* @param \phpbb\auth\auth $auth
+	* @param \phpbb\content_visibility $content_visibility
 	* @param \phpbb\db\driver\driver_interface $db
 	* @param \phpbb\request\request $request
 	* @param \phpbb\user $user
@@ -63,6 +67,7 @@ class vote
 	*/
 	public function __construct(
 		\phpbb\auth\auth $auth,
+		\phpbb\content_visibility $content_visibility,
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\request\request $request,
 		\phpbb\user $user,
@@ -75,6 +80,7 @@ class vote
 	)
 	{
 		$this->auth = $auth;
+		$this->content_visibility = $content_visibility;
 		$this->db = $db;
 		$this->request = $request;
 		$this->user = $user;
@@ -95,6 +101,16 @@ class vote
 	*/
 	public function handle_vote($post_id, $type)
 	{
+		// Validate Vote Type
+		if (!in_array($type, array('up', 'down'), true))
+		{
+			return new JsonResponse(array(
+				'status'	=> 'error',
+				'title'		=> $this->user->lang('KARMA'),
+				'message'	=> $this->user->lang('KARMA_ERROR_VOTE_FAILED'),
+			));
+		}
+
 		// Verify Authentication
 		if (!$this->user->data['is_registered'] || $this->user->data['user_id'] == ANONYMOUS)
 		{
@@ -118,30 +134,21 @@ class vote
 			));
 		}
 
-		// Fetch Post Details
-		$sql = 'SELECT poster_id, forum_id, topic_id, post_karma
-			FROM ' . POSTS_TABLE . '
-			WHERE post_id = ' . (int) $post_id;
+		// Fetch Post Details and Forum Password
+		$sql = 'SELECT p.poster_id, p.forum_id, p.topic_id, p.post_karma, p.post_visibility, f.forum_password
+			FROM ' . POSTS_TABLE . ' p
+			LEFT JOIN ' . FORUMS_TABLE . ' f ON (f.forum_id = p.forum_id)
+			WHERE p.post_id = ' . (int) $post_id;
 		$result = $this->db->sql_query($sql);
 		$post = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		if (!$post)
+		if (!$post || !$this->auth->acl_get('f_read', (int) $post['forum_id']) || !$this->content_visibility->is_visible('post', (int) $post['forum_id'], $post) || !$this->check_forum_password_access((int) $post['forum_id'], $post['forum_password']))
 		{
 			return new JsonResponse(array(
 				'status'	=> 'error',
 				'title'		=> $this->user->lang('KARMA'),
 				'message'	=> $this->user->lang('KARMA_ERROR_POST_NOT_FOUND')
-			));
-		}
-
-		// Verify Forum Read Permission
-		if (!$this->auth->acl_get('f_read', (int) $post['forum_id']))
-		{
-			return new JsonResponse(array(
-				'status'	=> 'error',
-				'title'		=> $this->user->lang('KARMA'),
-				'message'	=> $this->user->lang('KARMA_ERROR_NO_PERMISSION')
 			));
 		}
 
@@ -275,61 +282,58 @@ class vote
 		// Start Database Transaction
 		$this->db->sql_transaction('begin');
 
-		try
+		// A. Update Post Karma
+		$sql = 'UPDATE ' . POSTS_TABLE . '
+			SET post_karma = post_karma + ' . (int) $karma_diff . '
+			WHERE post_id = ' . (int) $post_id;
+		$this->db->sql_query($sql);
+
+		// B. Update Author's User Karma (if the author is a registered user)
+		if ($poster_id !== ANONYMOUS)
 		{
-			// A. Update Post Karma
-			$sql = 'UPDATE ' . POSTS_TABLE . '
-				SET post_karma = post_karma + ' . (int) $karma_diff . '
-				WHERE post_id = ' . (int) $post_id;
+			$sql = 'UPDATE ' . USERS_TABLE . '
+				SET user_karma = user_karma + ' . (int) $karma_diff . '
+				WHERE user_id = ' . (int) $poster_id;
 			$this->db->sql_query($sql);
-
-			// B. Update Author's User Karma (if the author is a registered user)
-			if ($poster_id !== ANONYMOUS)
-			{
-				$sql = 'UPDATE ' . USERS_TABLE . '
-					SET user_karma = user_karma + ' . (int) $karma_diff . '
-					WHERE user_id = ' . (int) $poster_id;
-				$this->db->sql_query($sql);
-			}
-
-			// C. Write/Delete Vote tracking record
-			if ($db_action === 'delete')
-			{
-				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
-					WHERE vote_id = ' . (int) $existing_vote_id;
-				$this->db->sql_query($sql);
-			}
-			else
-			{
-				// Insert new vote
-				$sql_arr = array(
-					'post_id'			=> (int) $post_id,
-					'user_id'			=> $user_id,
-					'vote_direction'	=> $vote_direction,
-					'vote_time'			=> time(),
-				);
-				$sql = 'INSERT INTO ' . $this->table_prefix . 'vinny_karma_votes ' . $this->db->sql_build_array('INSERT', $sql_arr);
-				$this->db->sql_query($sql);
-			}
-
-			// Commit Database Changes
-			$this->db->sql_transaction('commit');
 		}
-		catch (\Exception $e)
+
+		$new_vote_id = 0;
+
+		// C. Write/Delete Vote tracking record
+		if ($db_action === 'delete')
 		{
-			// Rollback on any failure
-			$this->db->sql_transaction('rollback');
-			return new JsonResponse(array(
-				'status'	=> 'error',
-				'title'		=> $this->user->lang('KARMA'),
-				'message'	=> $this->user->lang('KARMA_ERROR_DB_FAILED')
-			));
+			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE vote_id = ' . (int) $existing_vote_id;
+			$this->db->sql_query($sql);
+		}
+		else
+		{
+			// Insert new vote
+			$sql_arr = array(
+				'post_id'			=> (int) $post_id,
+				'user_id'			=> $user_id,
+				'vote_direction'	=> $vote_direction,
+				'vote_time'			=> time(),
+			);
+			$sql = 'INSERT INTO ' . $this->table_prefix . 'vinny_karma_votes ' . $this->db->sql_build_array('INSERT', $sql_arr);
+			$this->db->sql_query($sql);
+			$new_vote_id = (int) $this->db->sql_nextid();
+		}
+
+		// Commit Database Changes
+		$this->db->sql_transaction('commit');
+
+		// Delete notification if vote was retracted
+		if ($db_action === 'delete' && $existing_vote_id)
+		{
+			$this->notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', (int) $existing_vote_id);
 		}
 
 		// Trigger Notification (if new vote is cast and author is not guest)
-		if ($vote_direction !== 0 && $poster_id !== ANONYMOUS)
+		if ($vote_direction !== 0 && $poster_id !== ANONYMOUS && $new_vote_id)
 		{
 			$this->notification_manager->add_notifications('vinny.karma.notification.type.karma_vote', array(
+				'vote_id'			=> (int) $new_vote_id,
 				'post_id'			=> (int) $post_id,
 				'topic_id'			=> (int) $post['topic_id'],
 				'post_author_id'	=> $poster_id,
@@ -365,6 +369,32 @@ class vote
 	}
 
 	/**
+	* Check if the current user has access to a password-protected forum
+	*
+	* @param int $forum_id
+	* @param string $forum_password
+	* @return bool
+	*/
+	protected function check_forum_password_access($forum_id, $forum_password)
+	{
+		if (empty($forum_password))
+		{
+			return true;
+		}
+
+		$sql = 'SELECT forum_id
+			FROM ' . FORUMS_ACCESS_TABLE . '
+			WHERE forum_id = ' . (int) $forum_id . '
+				AND user_id = ' . (int) $this->user->data['user_id'] . "
+				AND session_id = '" . $this->db->sql_escape($this->user->session_id) . "'";
+		$result = $this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		return (bool) $row;
+	}
+
+	/**
 	* Reset Karma Score for a specific Post
 	*
 	* @param int $post_id
@@ -375,7 +405,7 @@ class vote
 		// Verify moderator permission
 		if (!$this->auth->acl_get('m_karma_manage'))
 		{
-			trigger_error('NO_PERMISSION', E_USER_WARNING);
+			trigger_error('NOT_AUTHORISED', E_USER_WARNING);
 		}
 
 		// Validate CSRF via link hash
@@ -388,22 +418,17 @@ class vote
 		$post_id = (int) $post_id;
 
 		// Fetch Post and Author Details
-		$sql = 'SELECT poster_id, topic_id, forum_id
-			FROM ' . POSTS_TABLE . '
-			WHERE post_id = ' . (int) $post_id;
+		$sql = 'SELECT p.poster_id, p.topic_id, p.forum_id, p.post_visibility, f.forum_password
+			FROM ' . POSTS_TABLE . ' p
+			LEFT JOIN ' . FORUMS_TABLE . ' f ON (f.forum_id = p.forum_id)
+			WHERE p.post_id = ' . (int) $post_id;
 		$result = $this->db->sql_query($sql);
 		$post = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		if (!$post)
+		if (!$post || !$this->auth->acl_get('f_read', (int) $post['forum_id']) || !$this->content_visibility->is_visible('post', (int) $post['forum_id'], $post) || !$this->check_forum_password_access((int) $post['forum_id'], $post['forum_password']))
 		{
 			trigger_error('NO_POST', E_USER_WARNING);
-		}
-
-		// Verify Forum Read Permission
-		if (!$this->auth->acl_get('f_read', (int) $post['forum_id']))
-		{
-			trigger_error('NO_PERMISSION', E_USER_WARNING);
 		}
 
 		$poster_id = (int) $post['poster_id'];
@@ -420,8 +445,24 @@ class vote
 		if (confirm_box(true))
 		{
 			$this->db->sql_transaction('begin');
-			try
-			{
+
+			// Find and delete notifications for all votes of this post
+				$sql = 'SELECT vote_id
+					FROM ' . $this->table_prefix . 'vinny_karma_votes
+					WHERE post_id = ' . (int) $post_id;
+				$result = $this->db->sql_query($sql);
+				$vote_ids = array();
+				while ($v_row = $this->db->sql_fetchrow($result))
+				{
+					$vote_ids[] = (int) $v_row['vote_id'];
+				}
+				$this->db->sql_freeresult($result);
+
+				if (!empty($vote_ids))
+				{
+					$this->notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
+				}
+
 				// Delete all votes for this post
 				$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
 					WHERE post_id = ' . (int) $post_id;
@@ -437,7 +478,7 @@ class vote
 				if ($poster_id !== ANONYMOUS)
 				{
 					$sql = 'UPDATE ' . USERS_TABLE . '
-						SET user_karma = (
+						SET user_karma = user_karma_adjustment + (
 							SELECT COALESCE(SUM(post_karma), 0)
 							FROM ' . POSTS_TABLE . '
 							WHERE poster_id = ' . (int) $poster_id . '
@@ -465,13 +506,6 @@ class vote
 					'post_id'	=> (int) $post_id,
 					$poster_name
 				));
-			}
-			catch (\Exception $e)
-			{
-				$this->db->sql_transaction('rollback');
-				$this->log->add('critical', $this->user->data['user_id'], $this->user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
-				trigger_error($this->user->lang('KARMA_ERROR_INTERNAL'), E_USER_WARNING);
-			}
 
 			meta_refresh(3, $redirect_url);
 			trigger_error($this->user->lang('VINNY_KARMA_MCP_RESET_POST_SUCCESS', $post_id) . '<br /><br />' . sprintf($this->user->lang['RETURN_PAGE'], '<a href="' . $redirect_url . '">', '</a>'));

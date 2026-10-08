@@ -22,8 +22,6 @@ $lang = array_merge($lang, array(
 	'MCP_KARMA'							=> 'Karma',
 	'MCP_KARMA_USER'					=> 'Visão geral',
 	'MCP_KARMA_USER_DETAILS'			=> 'Detalhes do usuário',
-	'ACL_M_KARMA_MANAGE'				=> 'Pode moderar karma de usuários',
-
 
 	'VINNY_KARMA_MCP_RESET'				=> 'Reiniciar',
 	'VINNY_KARMA_MCP_RESET_RECEIVED'	=> 'Reiniciar karma recebido',

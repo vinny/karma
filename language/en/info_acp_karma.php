@@ -44,17 +44,17 @@ $lang = array_merge($lang, array(
 
 	// Maintenance Actions
 	'VINNY_KARMA_RESYNC'					=> 'Resync karma scores',
-	'VINNY_KARMA_RESYNC_EXPLAIN'			=> 'Recalculates all post and user karma scores from scratch using the raw votes log table. Use this if counters become out-of-sync.',
+	'VINNY_KARMA_RESYNC_EXPLAIN'			=> 'Recalculates all post and user karma scores from scratch using the raw votes log table (recounting only votes currently present in the log). Use this if counters become out-of-sync.',
 	'VINNY_KARMA_RESYNC_SUCCESS'			=> 'Karma scores have been successfully resynchronized.',
 
 	'VINNY_KARMA_RESET_USER'				=> 'Reset user karma & history',
 	'VINNY_KARMA_RESET_USER_EXPLAIN'		=> 'Enter a username to reset their total karma score to 0 and completely purge all votes cast by them and received on their posts from the log.',
 	'VINNY_KARMA_RESET_USER_NOT_FOUND'		=> 'The requested username could not be found.',
-	'VINNY_KARMA_RESET_USER_SUCCESS'		=> 'Karma score and vote logs for user "%s" have been successfully reset.',
+	'VINNY_KARMA_RESET_USER_SUCCESS'		=> 'Karma score and vote logs for user “%s” have been successfully reset.',
 	'VINNY_KARMA_CONFIRM_RESET'				=> 'Do you want to reset the Karma of user %s?',
 
 	'VINNY_KARMA_PRUNE'						=> 'Prune old vote logs',
-	'VINNY_KARMA_PRUNE_EXPLAIN'				=> 'Clears historical vote tracking records that are older than the specified number of days (e.g. entering 30 will delete logs older than 30 days, keeping all recent votes and today’s votes intact). The absolute karma scores of posts and users will remain unchanged.',
+	'VINNY_KARMA_PRUNE_EXPLAIN'				=> 'Clears historical vote tracking records older than the specified number of days (e.g. entering 30 will delete logs older than 30 days). Note that pruning allows members to vote again on posts whose vote records were removed, and running “Resync karma scores” afterwards will recount scores based only on the remaining votes in the log.',
 	'VINNY_KARMA_PRUNE_SUCCESS'				=> 'Successfully pruned %d vote entries older than %d days.',
 
 	// Log
@@ -66,10 +66,11 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_AUDIT_TIME'				=> 'Date / time',
 	'VINNY_KARMA_AUDIT_UP'					=> 'Upvote',
 	'VINNY_KARMA_AUDIT_DOWN'				=> 'Downvote',
+	'VINNY_KARMA_AUDIT_POST_DELETED'		=> 'Deleted',
 	'VINNY_KARMA_AUDIT_EMPTY'				=> 'No votes have been recorded in the database yet.',
 
 	'VINNY_KARMA_PRUNE_INVALID_DAYS'		=> 'Please enter a valid number of days (greater than 0).',
-	'VINNY_KARMA_CONFIRM_PRUNE'				=> 'Are you sure you want to prune all vote logs older than %d days? This action cannot be undone.',
+	'VINNY_KARMA_CONFIRM_PRUNE'				=> 'Are you sure you want to prune all vote logs older than %d days? Pruning allows affected members to re-vote on those posts, and a subsequent resync will recount only the remaining votes. This action cannot be undone.',
 
 	// Admin logs
 	'LOG_ACP_KARMA_RESYNC'					=> '<strong>Karma System: Resynchronized all karma scores</strong>',

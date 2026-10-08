@@ -59,25 +59,25 @@ class karma_vote extends \phpbb\notification\type\base
 	}
 
 	/**
-	* Get item ID (post ID)
+	* Get item ID (vote ID)
 	*
 	* @param array $data Notification data
 	* @return int
 	*/
 	static public function get_item_id($data)
 	{
-		return (int) $data['post_id'];
+		return (int) $data['vote_id'];
 	}
 
 	/**
-	* Get item parent ID (topic ID)
+	* Get item parent ID (post ID)
 	*
 	* @param array $data Notification data
 	* @return int
 	*/
 	static public function get_item_parent_id($data)
 	{
-		return (int) $data['topic_id'];
+		return (int) $data['post_id'];
 	}
 
 	/**
@@ -102,6 +102,7 @@ class karma_vote extends \phpbb\notification\type\base
 	/**
 	* Get users to query during loading
 	*
+	* @param array $data Notification data
 	* @return array
 	*/
 	public function users_to_query()
@@ -118,6 +119,7 @@ class karma_vote extends \phpbb\notification\type\base
 	*/
 	public function create_insert_array($data, $pre_insert_data = array())
 	{
+		$this->set_data('vote_id', (int) $data['vote_id']);
 		$this->set_data('post_id', (int) $data['post_id']);
 		$this->set_data('topic_id', (int) $data['topic_id']);
 		$this->set_data('voter_id', (int) $data['voter_id']);

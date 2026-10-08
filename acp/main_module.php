@@ -131,7 +131,7 @@ class main_module
 
 					// Recalculate user_karma for all users
 					$sql = 'UPDATE ' . USERS_TABLE . '
-						SET user_karma = (
+						SET user_karma = user_karma_adjustment + (
 							SELECT COALESCE(SUM(post_karma), 0)
 							FROM ' . POSTS_TABLE . '
 							WHERE poster_id = ' . USERS_TABLE . '.user_id
@@ -171,9 +171,8 @@ class main_module
 					if (confirm_box(true))
 					{
 						$db->sql_transaction('begin');
-						try
-						{
-							// Get affected post_ids voted by this user
+
+						// Get affected post_ids voted by this user
 							$sql = 'SELECT DISTINCT post_id
 								FROM ' . $table_prefix . 'vinny_karma_votes
 								WHERE user_id = ' . (int) $target_user_id;
@@ -222,7 +221,8 @@ class main_module
 
 							// Reset user's own karma score
 							$sql = 'UPDATE ' . USERS_TABLE . '
-								SET user_karma = 0
+								SET user_karma = 0,
+									user_karma_adjustment = 0
 								WHERE user_id = ' . (int) $target_user_id;
 							$db->sql_query($sql);
 
@@ -249,7 +249,7 @@ class main_module
 								if (!empty($affected_author_ids))
 								{
 									$sql = 'UPDATE ' . USERS_TABLE . '
-										SET user_karma = (
+										SET user_karma = user_karma_adjustment + (
 											SELECT COALESCE(SUM(post_karma), 0)
 											FROM ' . POSTS_TABLE . '
 											WHERE poster_id = ' . USERS_TABLE . '.user_id
@@ -263,14 +263,6 @@ class main_module
 
 							$phpbb_log = $phpbb_container->get('log');
 							$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'LOG_ACP_KARMA_RESET_USER', time(), array($row['username']));
-						}
-						catch (\Exception $e)
-						{
-							$db->sql_transaction('rollback');
-							$phpbb_log = $phpbb_container->get('log');
-							$phpbb_log->add('critical', $user->data['user_id'], $user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
-							trigger_error($user->lang('KARMA_ERROR_INTERNAL') . adm_back_link($this->u_action), E_USER_WARNING);
-						}
 
 						trigger_error(sprintf($user->lang('VINNY_KARMA_RESET_USER_SUCCESS'), $row['username']) . adm_back_link($this->u_action));
 					}

@@ -29,7 +29,6 @@ $lang = array_merge($lang, array(
 	'KARMA_ERROR_NO_PERMISSION'		=> 'You do not have permission to vote.',
 	'KARMA_ERROR_SELF_VOTE'			=> 'You cannot vote on your own posts.',
 	'KARMA_ERROR_VOTE_DISABLED'		=> 'Voting is disabled for this post.',
-	'KARMA_ERROR_DB_FAILED'			=> 'A database error occurred. Please try again.',
 	'KARMA_ALREADY_VOTED_UP'		=> 'You have already upvoted this post.',
 	'KARMA_ALREADY_VOTED_DOWN'		=> 'You have already downvoted this post.',
 	'KARMA_ERROR_ALREADY_VOTED'		=> 'You have already voted on this post.',
@@ -56,16 +55,9 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MCP_RESET_POST_SUCCESS'	=> 'Successfully reset karma score for post #%d.',
 	'VINNY_KARMA_MCP_MANAGE'				=> 'Manage',
 
-	'KARMA_ERROR_INTERNAL'					=> 'An internal error occurred. The details have been logged.',
-	'LOG_KARMA_EXCEPTION'					=> 'Karma System error: %s',
-
 	// Moderator logs
 	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Reset user received karma</strong><br />» User: %s',
 	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Reset user cast votes</strong><br />» User: %s',
 	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Adjusted user karma score</strong><br />» User: %1$s (Adjustment: %2$d, Reason: %3$s)',
 	'LOG_MCP_KARMA_RESET_POST'			=> '<strong>Reset post karma score</strong><br />» Author: %s',
 ));
-
-// Report Reasons
-$lang['report_reasons']['TITLE']['ABUSE_KARMA'] = 'Vote abuse';
-$lang['report_reasons']['DESCRIPTION']['ABUSE_KARMA'] = 'Manipulating votes or targeting users (targeted upvoting or downvoting).';

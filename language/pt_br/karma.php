@@ -29,7 +29,6 @@ $lang = array_merge($lang, array(
 	'KARMA_ERROR_NO_PERMISSION'		=> 'Você não tem permissão para votar.',
 	'KARMA_ERROR_SELF_VOTE'			=> 'Você não pode votar em suas próprias mensagens.',
 	'KARMA_ERROR_VOTE_DISABLED'		=> 'A votação está desativada para esta mensagem.',
-	'KARMA_ERROR_DB_FAILED'			=> 'Ocorreu um erro no banco de dados. Por favor, tente novamente.',
 	'KARMA_ALREADY_VOTED_UP'		=> 'Você já votou a favor desta mensagem.',
 	'KARMA_ALREADY_VOTED_DOWN'		=> 'Você já votou contra esta mensagem.',
 	'KARMA_ERROR_ALREADY_VOTED'		=> 'Você já votou nesta mensagem.',
@@ -56,16 +55,9 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_MCP_RESET_POST_SUCCESS'	=> 'Pontuação de karma reiniciada com sucesso para a mensagem #%d.',
 	'VINNY_KARMA_MCP_MANAGE'				=> 'Gerenciar',
 
-	'KARMA_ERROR_INTERNAL'					=> 'Ocorreu um erro interno. Os detalhes foram registrados no log.',
-	'LOG_KARMA_EXCEPTION'					=> 'Erro do sistema de Karma: %s',
-
 	// Moderator logs
 	'LOG_MCP_KARMA_RESET_RECEIVED'		=> '<strong>Karma recebido pelo usuário reiniciado</strong><br />» Usuário: %s',
 	'LOG_MCP_KARMA_RESET_CAST'			=> '<strong>Votos efetuados pelo usuário reiniciados</strong><br />» Usuário: %s',
 	'LOG_MCP_KARMA_ADJUST'				=> '<strong>Pontuação de karma do usuário ajustada</strong><br />» Usuário: %1$s (Ajuste: %2$d, Motivo: %3$s)',
 	'LOG_MCP_KARMA_RESET_POST'			=> '<strong>Pontuação de karma da mensagem reiniciada</strong><br />» Autor: %s',
 ));
-
-// Report Reasons
-$lang['report_reasons']['TITLE']['ABUSE_KARMA'] = 'Abuso de votos';
-$lang['report_reasons']['DESCRIPTION']['ABUSE_KARMA'] = 'O usuário está tentando manipular ou abusar do sistema de votação de karma.';

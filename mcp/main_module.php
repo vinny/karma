@@ -60,7 +60,7 @@ class main_module
 		// Check moderator permission
 		if (!$auth->acl_get('m_karma_manage'))
 		{
-			trigger_error('NO_PERMISSION', E_USER_WARNING);
+			trigger_error('NOT_AUTHORISED', E_USER_WARNING);
 		}
 
 		$user->add_lang_ext('vinny/karma', 'karma');
@@ -138,46 +138,38 @@ class main_module
 						if (confirm_box(true))
 						{
 							$db->sql_transaction('begin');
-							try
-							{
-								// Delete votes received on posts authored by this user
-								$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
-									WHERE post_id IN (
-										SELECT post_id
-										FROM ' . POSTS_TABLE . '
-										WHERE poster_id = ' . (int) $user_id . '
-									)';
-								$db->sql_query($sql);
 
-								// Reset post karma score on their posts
-								$sql = 'UPDATE ' . POSTS_TABLE . '
-									SET post_karma = 0
-									WHERE poster_id = ' . (int) $user_id;
-								$db->sql_query($sql);
+							// Delete votes received on posts authored by this user
+							$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
+								WHERE post_id IN (
+									SELECT post_id
+									FROM ' . POSTS_TABLE . '
+									WHERE poster_id = ' . (int) $user_id . '
+								)';
+							$db->sql_query($sql);
 
-								// Reset user's own karma score
-								$sql = 'UPDATE ' . USERS_TABLE . '
-									SET user_karma = 0
-									WHERE user_id = ' . (int) $user_id;
-								$db->sql_query($sql);
+							// Reset post karma score on their posts
+							$sql = 'UPDATE ' . POSTS_TABLE . '
+								SET post_karma = 0
+								WHERE poster_id = ' . (int) $user_id;
+							$db->sql_query($sql);
 
-								$db->sql_transaction('commit');
+							// Reset user's own karma score
+							$sql = 'UPDATE ' . USERS_TABLE . '
+								SET user_karma = 0,
+									user_karma_adjustment = 0
+								WHERE user_id = ' . (int) $user_id;
+							$db->sql_query($sql);
 
-								// Log moderation action to Mod Log
-								$phpbb_log = $phpbb_container->get('log');
-								$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_RESET_RECEIVED', time(), array(
-									'forum_id' => 0,
-									'topic_id' => 0,
-									$userrow['username']
-								));
-							}
-							catch (\Exception $e)
-							{
-								$db->sql_transaction('rollback');
-								$phpbb_log = $phpbb_container->get('log');
-								$phpbb_log->add('critical', $user->data['user_id'], $user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
-								trigger_error($user->lang('KARMA_ERROR_INTERNAL') . adm_back_link($this->u_action), E_USER_WARNING);
-							}
+							$db->sql_transaction('commit');
+
+							// Log moderation action to Mod Log
+							$phpbb_log = $phpbb_container->get('log');
+							$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_RESET_RECEIVED', time(), array(
+								'forum_id' => 0,
+								'topic_id' => 0,
+								$userrow['username']
+							));
 
 							meta_refresh(3, $this->u_action);
 							trigger_error(sprintf($user->lang('VINNY_KARMA_MCP_RESET_RECEIVED_SUCCESS'), $userrow['username']) . '<br /><br />' . sprintf($user->lang['RETURN_PAGE'], '<a href="' . $this->u_action . '">', '</a>'));
@@ -195,9 +187,8 @@ class main_module
 						if (confirm_box(true))
 						{
 							$db->sql_transaction('begin');
-							try
-							{
-								// Get affected post_ids voted by this user
+
+							// Get affected post_ids voted by this user
 								$sql = 'SELECT DISTINCT post_id
 									FROM ' . $table_prefix . 'vinny_karma_votes
 									WHERE user_id = ' . (int) $user_id;
@@ -252,7 +243,7 @@ class main_module
 									if (!empty($affected_author_ids))
 									{
 										$sql = 'UPDATE ' . USERS_TABLE . '
-											SET user_karma = (
+											SET user_karma = user_karma_adjustment + (
 												SELECT COALESCE(SUM(post_karma), 0)
 												FROM ' . POSTS_TABLE . '
 												WHERE poster_id = ' . USERS_TABLE . '.user_id
@@ -271,14 +262,6 @@ class main_module
 									'topic_id' => 0,
 									$userrow['username']
 								));
-							}
-							catch (\Exception $e)
-							{
-								$db->sql_transaction('rollback');
-								$phpbb_log = $phpbb_container->get('log');
-								$phpbb_log->add('critical', $user->data['user_id'], $user->ip, 'LOG_KARMA_EXCEPTION', time(), array($e->getMessage()));
-								trigger_error($user->lang('KARMA_ERROR_INTERNAL') . adm_back_link($this->u_action), E_USER_WARNING);
-							}
 
 							meta_refresh(3, $this->u_action);
 							trigger_error(sprintf($user->lang('VINNY_KARMA_MCP_RESET_CAST_SUCCESS'), $userrow['username']) . '<br /><br />' . sprintf($user->lang['RETURN_PAGE'], '<a href="' . $this->u_action . '">', '</a>'));
@@ -304,7 +287,8 @@ class main_module
 						if (confirm_box(true))
 						{
 							$sql = 'UPDATE ' . USERS_TABLE . '
-								SET user_karma = user_karma + ' . (int) $adjustment . '
+								SET user_karma = user_karma + ' . (int) $adjustment . ',
+									user_karma_adjustment = user_karma_adjustment + ' . (int) $adjustment . '
 								WHERE user_id = ' . (int) $user_id;
 							$db->sql_query($sql);
 
@@ -315,7 +299,7 @@ class main_module
 								'topic_id' => 0,
 								$userrow['username'],
 								(int) $adjustment,
-								utf8_htmlspecialchars($reason),
+								$reason,
 							));
 
 							meta_refresh(3, $this->u_action);
@@ -326,7 +310,7 @@ class main_module
 							confirm_box(false, sprintf($user->lang('VINNY_KARMA_MCP_CONFIRM_ADJUST'), $userrow['username'], $adjustment), build_hidden_fields(array(
 								'action[adjust_balance]'	=> 1,
 								'adjust_amount'				=> $adjustment,
-								'adjust_reason'				=> $reason,
+								'adjust_reason'				=> htmlspecialchars_decode($reason),
 								'u'							=> $user_id,
 							)));
 						}
@@ -436,7 +420,7 @@ class main_module
 
 		// Recalculate user_karma for all users
 		$sql = 'UPDATE ' . USERS_TABLE . '
-			SET user_karma = (
+			SET user_karma = user_karma_adjustment + (
 				SELECT COALESCE(SUM(post_karma), 0)
 				FROM ' . POSTS_TABLE . '
 				WHERE poster_id = ' . USERS_TABLE . '.user_id

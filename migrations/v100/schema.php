@@ -49,6 +49,7 @@ class schema extends \phpbb\db\migration\migration
 				),
 				$this->table_prefix . 'users' => array(
 					'user_karma' => array('INT:11', 0),
+					'user_karma_adjustment' => array('INT:11', 0),
 				),
 			),
 		);
@@ -68,6 +69,7 @@ class schema extends \phpbb\db\migration\migration
 				),
 				$this->table_prefix . 'users' => array(
 					'user_karma',
+					'user_karma_adjustment',
 				),
 			),
 		);

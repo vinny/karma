@@ -44,17 +44,17 @@ $lang = array_merge($lang, array(
 
 	// Maintenance Actions
 	'VINNY_KARMA_RESYNC'					=> 'Ressincronizar pontuações de karma',
-	'VINNY_KARMA_RESYNC_EXPLAIN'			=> 'Recalcula todas as pontuações de karma de mensagens e usuários a partir da tabela de registros de votos. Utilize esta opção se os contadores ficarem dessincronizados.',
+	'VINNY_KARMA_RESYNC_EXPLAIN'			=> 'Recalcula todas as pontuações de karma de mensagens e usuários a partir da tabela de registros de votos (recontando apenas os votos atualmente presentes no registro). Utilize esta opção se os contadores ficarem dessincronizados.',
 	'VINNY_KARMA_RESYNC_SUCCESS'			=> 'As pontuações de karma foram ressincronizadas com sucesso.',
 
 	'VINNY_KARMA_RESET_USER'				=> 'Reiniciar karma e histórico do usuário',
 	'VINNY_KARMA_RESET_USER_EXPLAIN'		=> 'Informe um nome de usuário para reiniciar sua pontuação total de karma para 0 e apagar completamente todos os votos enviados e recebidos por ele.',
 	'VINNY_KARMA_RESET_USER_NOT_FOUND'		=> 'O nome de usuário solicitado não foi encontrado.',
-	'VINNY_KARMA_RESET_USER_SUCCESS'		=> 'A pontuação de karma e os registros de votos do usuário "%s" foram reiniciados com sucesso.',
+	'VINNY_KARMA_RESET_USER_SUCCESS'		=> 'A pontuação de karma e os registros de votos do usuário “%s” foram reiniciados com sucesso.',
 	'VINNY_KARMA_CONFIRM_RESET'				=> 'Deseja reiniciar o Karma do usuário %s?',
 
 	'VINNY_KARMA_PRUNE'						=> 'Expurgar registros de votos antigos',
-	'VINNY_KARMA_PRUNE_EXPLAIN'				=> 'Remove os registros históricos de votos mais antigos que o número de dias especificado (ex: informar 30 apagará registros anteriores a 30 dias, mantendo votos recentes e de hoje intocados). As pontuações absolutas de karma de mensagens e usuários permanecerão inalteradas.',
+	'VINNY_KARMA_PRUNE_EXPLAIN'				=> 'Remove os registros históricos de votos mais antigos que o número de dias especificado (ex: informar 30 apagará registros anteriores a 30 dias). Observe que a expurgação permite que os membros votem novamente nas mensagens cujos registros foram removidos, e executar a “Ressincronizar pontuações de karma” posteriormente recalculará as pontuações com base apenas nos votos restantes no registro.',
 	'VINNY_KARMA_PRUNE_SUCCESS'				=> '%d registros de votos anteriores a %d dias foram expurgados com sucesso.',
 
 	// Log
@@ -66,10 +66,11 @@ $lang = array_merge($lang, array(
 	'VINNY_KARMA_AUDIT_TIME'				=> 'Data / hora',
 	'VINNY_KARMA_AUDIT_UP'					=> 'A favor',
 	'VINNY_KARMA_AUDIT_DOWN'				=> 'Contra',
+	'VINNY_KARMA_AUDIT_POST_DELETED'		=> 'Excluída',
 	'VINNY_KARMA_AUDIT_EMPTY'				=> 'Nenhum voto foi registrado no banco de dados ainda.',
 
 	'VINNY_KARMA_PRUNE_INVALID_DAYS'		=> 'Por favor, informe um número válido de dias (maior que 0).',
-	'VINNY_KARMA_CONFIRM_PRUNE'				=> 'Tem certeza de que deseja expurgar todos os registros de votos anteriores a %d dias? Esta ação não pode ser desfeita.',
+	'VINNY_KARMA_CONFIRM_PRUNE'				=> 'Tem certeza de que deseja expurgar todos os registros de votos anteriores a %d dias? A expurgação permite que os membros afetados votem novamente nessas mensagens, e uma ressincronização posterior contará apenas os votos restantes. Esta ação não pode ser desfeita.',
 
 	// Admin logs
 	'LOG_ACP_KARMA_RESYNC'					=> '<strong>Sistema de Karma: Ressincronizou todas as pontuações de karma</strong>',
