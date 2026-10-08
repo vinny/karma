@@ -38,8 +38,12 @@ class vote_test extends \phpbb_test_case
 			->disableOriginalConstructor()->getMock();
 		$this->notification_manager = $this->getMockBuilder('\phpbb\notification\manager')
 			->disableOriginalConstructor()->getMock();
-		$this->config = $this->getMockBuilder('\phpbb\config\config')
-			->disableOriginalConstructor()->getMock();
+		$this->config = new \phpbb\config\config(array(
+			'vinny_karma_enabled'			=> 1,
+			'vinny_karma_enable_downvote'	=> 1,
+			'vinny_karma_flood_interval'	=> 0,
+			'vinny_karma_excluded_forums'	=> '',
+		));
 		$this->log = $this->getMockBuilder('\phpbb\log\log')
 			->disableOriginalConstructor()->getMock();
 
