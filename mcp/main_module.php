@@ -139,6 +139,25 @@ class main_module
 						{
 							$db->sql_transaction('begin');
 
+							// Collect vote_ids to delete their notifications
+							$sql = 'SELECT v.vote_id
+								FROM ' . $table_prefix . 'vinny_karma_votes v
+								INNER JOIN ' . POSTS_TABLE . ' p ON v.post_id = p.post_id
+								WHERE p.poster_id = ' . (int) $user_id;
+							$result = $db->sql_query($sql);
+							$vote_ids = array();
+							while ($v_row = $db->sql_fetchrow($result))
+							{
+								$vote_ids[] = (int) $v_row['vote_id'];
+							}
+							$db->sql_freeresult($result);
+
+							if (!empty($vote_ids))
+							{
+								$notification_manager = $phpbb_container->get('notification_manager');
+								$notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
+							}
+
 							// Delete votes received on posts authored by this user
 							$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
 								WHERE post_id IN (
@@ -154,10 +173,9 @@ class main_module
 								WHERE poster_id = ' . (int) $user_id;
 							$db->sql_query($sql);
 
-							// Reset user's own karma score
+							// Recalculate user's total karma score (preserving manual adjustment)
 							$sql = 'UPDATE ' . USERS_TABLE . '
-								SET user_karma = 0,
-									user_karma_adjustment = 0
+								SET user_karma = user_karma_adjustment
 								WHERE user_id = ' . (int) $user_id;
 							$db->sql_query($sql);
 
@@ -188,17 +206,20 @@ class main_module
 						{
 							$db->sql_transaction('begin');
 
-							// Get affected post_ids voted by this user
-								$sql = 'SELECT DISTINCT post_id
+							// Get affected vote_ids and post_ids voted by this user
+								$sql = 'SELECT vote_id, post_id
 									FROM ' . $table_prefix . 'vinny_karma_votes
 									WHERE user_id = ' . (int) $user_id;
 								$result = $db->sql_query($sql);
+								$vote_ids = array();
 								$affected_post_ids = array();
 								while ($v_row = $db->sql_fetchrow($result))
 								{
+									$vote_ids[] = (int) $v_row['vote_id'];
 									$affected_post_ids[] = (int) $v_row['post_id'];
 								}
 								$db->sql_freeresult($result);
+								$affected_post_ids = array_values(array_unique($affected_post_ids));
 
 								// Get affected author_ids
 								$affected_author_ids = array();
@@ -213,6 +234,12 @@ class main_module
 										$affected_author_ids[] = (int) $a_row['poster_id'];
 									}
 									$db->sql_freeresult($result);
+								}
+
+								if (!empty($vote_ids))
+								{
+									$notification_manager = $phpbb_container->get('notification_manager');
+									$notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
 								}
 
 								// Delete votes cast by this user
@@ -310,7 +337,7 @@ class main_module
 							confirm_box(false, sprintf($user->lang('VINNY_KARMA_MCP_CONFIRM_ADJUST'), $userrow['username'], $adjustment), build_hidden_fields(array(
 								'action[adjust_balance]'	=> 1,
 								'adjust_amount'				=> $adjustment,
-								'adjust_reason'				=> htmlspecialchars_decode($reason),
+								'adjust_reason'				=> $reason,
 								'u'							=> $user_id,
 							)));
 						}
@@ -398,33 +425,5 @@ class main_module
 				$this->tpl_name = 'mcp_karma_user';
 			break;
 		}
-	}
-
-	/**
-	* Recalculates karma scores for all posts and users
-	*
-	* @param string $table_prefix
-	*/
-	protected function resync($table_prefix)
-	{
-		global $db;
-
-		// Recalculate post_karma for all posts
-		$sql = 'UPDATE ' . POSTS_TABLE . '
-			SET post_karma = (
-				SELECT COALESCE(SUM(vote_direction), 0)
-				FROM ' . $table_prefix . 'vinny_karma_votes
-				WHERE post_id = ' . POSTS_TABLE . '.post_id
-			)';
-		$db->sql_query($sql);
-
-		// Recalculate user_karma for all users
-		$sql = 'UPDATE ' . USERS_TABLE . '
-			SET user_karma = user_karma_adjustment + (
-				SELECT COALESCE(SUM(post_karma), 0)
-				FROM ' . POSTS_TABLE . '
-				WHERE poster_id = ' . USERS_TABLE . '.user_id
-			)';
-		$db->sql_query($sql);
 	}
 }

@@ -172,15 +172,30 @@ class main_module
 					{
 						$db->sql_transaction('begin');
 
-						// Get affected post_ids voted by this user
-							$sql = 'SELECT DISTINCT post_id
+						// Get affected vote_ids and post_ids voted by this user
+							$sql = 'SELECT vote_id, post_id
 								FROM ' . $table_prefix . 'vinny_karma_votes
 								WHERE user_id = ' . (int) $target_user_id;
 							$result = $db->sql_query($sql);
+							$vote_ids = array();
 							$affected_post_ids = array();
 							while ($v_row = $db->sql_fetchrow($result))
 							{
+								$vote_ids[] = (int) $v_row['vote_id'];
 								$affected_post_ids[] = (int) $v_row['post_id'];
+							}
+							$db->sql_freeresult($result);
+							$affected_post_ids = array_values(array_unique($affected_post_ids));
+
+							// Collect vote_ids received on posts authored by this user
+							$sql = 'SELECT v.vote_id
+								FROM ' . $table_prefix . 'vinny_karma_votes v
+								INNER JOIN ' . POSTS_TABLE . ' p ON v.post_id = p.post_id
+								WHERE p.poster_id = ' . (int) $target_user_id;
+							$result = $db->sql_query($sql);
+							while ($v_row = $db->sql_fetchrow($result))
+							{
+								$vote_ids[] = (int) $v_row['vote_id'];
 							}
 							$db->sql_freeresult($result);
 
@@ -197,6 +212,13 @@ class main_module
 									$affected_author_ids[] = (int) $a_row['poster_id'];
 								}
 								$db->sql_freeresult($result);
+							}
+
+							$vote_ids = array_values(array_unique($vote_ids));
+							if (!empty($vote_ids))
+							{
+								$notification_manager = $phpbb_container->get('notification_manager');
+								$notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
 							}
 
 							// Delete votes cast by this user
@@ -287,6 +309,24 @@ class main_module
 					if (confirm_box(true))
 					{
 						$prune_time = time() - ($prune_days * 86400);
+
+						// Collect vote_ids to delete their notifications
+						$sql = 'SELECT vote_id
+							FROM ' . $table_prefix . 'vinny_karma_votes
+							WHERE vote_time < ' . (int) $prune_time;
+						$result = $db->sql_query($sql);
+						$vote_ids = array();
+						while ($v_row = $db->sql_fetchrow($result))
+						{
+							$vote_ids[] = (int) $v_row['vote_id'];
+						}
+						$db->sql_freeresult($result);
+
+						if (!empty($vote_ids))
+						{
+							$notification_manager = $phpbb_container->get('notification_manager');
+							$notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
+						}
 
 						$sql = 'DELETE FROM ' . $table_prefix . 'vinny_karma_votes
 							WHERE vote_time < ' . (int) $prune_time;

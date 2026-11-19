@@ -237,7 +237,16 @@ class vote
 		// Determine new requested vote direction
 		$new_direction = ($type === 'up') ? 1 : -1;
 
-		// Get Existing Vote
+		// Start Database Transaction and serialize concurrent votes on this post
+		$this->db->sql_transaction('begin');
+
+		// Acquire a row-level write lock on the post before reading vote state
+		$sql = 'UPDATE ' . POSTS_TABLE . '
+			SET post_karma = post_karma
+			WHERE post_id = ' . (int) $post_id;
+		$this->db->sql_query($sql);
+
+		// Get Existing Vote inside the serialized transaction
 		$sql = 'SELECT vote_id, vote_direction
 			FROM ' . $this->table_prefix . 'vinny_karma_votes
 			WHERE post_id = ' . (int) $post_id . '
@@ -257,6 +266,8 @@ class vote
 
 			if ($previous_direction === $new_direction)
 			{
+				$this->db->sql_transaction('rollback');
+
 				return new JsonResponse(array(
 					'status'	=> 'error',
 					'title'		=> $this->user->lang('KARMA'),
@@ -279,32 +290,25 @@ class vote
 			$karma_diff = $new_direction - $previous_direction;
 		}
 
-		// Start Database Transaction
-		$this->db->sql_transaction('begin');
-
-		// A. Update Post Karma
-		$sql = 'UPDATE ' . POSTS_TABLE . '
-			SET post_karma = post_karma + ' . (int) $karma_diff . '
-			WHERE post_id = ' . (int) $post_id;
-		$this->db->sql_query($sql);
-
-		// B. Update Author's User Karma (if the author is a registered user)
-		if ($poster_id !== ANONYMOUS)
-		{
-			$sql = 'UPDATE ' . USERS_TABLE . '
-				SET user_karma = user_karma + ' . (int) $karma_diff . '
-				WHERE user_id = ' . (int) $poster_id;
-			$this->db->sql_query($sql);
-		}
-
 		$new_vote_id = 0;
 
-		// C. Write/Delete Vote tracking record
+		// A. Write/Delete Vote tracking record first and verify mutation succeeded
 		if ($db_action === 'delete')
 		{
 			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
 				WHERE vote_id = ' . (int) $existing_vote_id;
 			$this->db->sql_query($sql);
+
+			if ($this->db->sql_affectedrows() <= 0)
+			{
+				$this->db->sql_transaction('rollback');
+
+				return new JsonResponse(array(
+					'status'	=> 'error',
+					'title'		=> $this->user->lang('KARMA'),
+					'message'	=> $this->user->lang('KARMA_ERROR_VOTE_FAILED')
+				));
+			}
 		}
 		else
 		{
@@ -316,8 +320,37 @@ class vote
 				'vote_time'			=> time(),
 			);
 			$sql = 'INSERT INTO ' . $this->table_prefix . 'vinny_karma_votes ' . $this->db->sql_build_array('INSERT', $sql_arr);
-			$this->db->sql_query($sql);
+			$this->db->sql_return_on_error(true);
+			$inserted = $this->db->sql_query($sql);
+			$this->db->sql_return_on_error(false);
+
+			if (!$inserted)
+			{
+				$this->db->sql_transaction('rollback');
+
+				return new JsonResponse(array(
+					'status'	=> 'error',
+					'title'		=> $this->user->lang('KARMA'),
+					'message'	=> $this->user->lang('KARMA_ERROR_ALREADY_VOTED')
+				));
+			}
+
 			$new_vote_id = (int) $this->db->sql_nextid();
+		}
+
+		// B. Update Post Karma (only after vote mutation succeeded)
+		$sql = 'UPDATE ' . POSTS_TABLE . '
+			SET post_karma = post_karma + ' . (int) $karma_diff . '
+			WHERE post_id = ' . (int) $post_id;
+		$this->db->sql_query($sql);
+
+		// C. Update Author's User Karma (if the author is a registered user)
+		if ($poster_id !== ANONYMOUS)
+		{
+			$sql = 'UPDATE ' . USERS_TABLE . '
+				SET user_karma = user_karma + ' . (int) $karma_diff . '
+				WHERE user_id = ' . (int) $poster_id;
+			$this->db->sql_query($sql);
 		}
 
 		// Commit Database Changes

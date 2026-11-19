@@ -102,7 +102,6 @@ class karma_vote extends \phpbb\notification\type\base
 	/**
 	* Get users to query during loading
 	*
-	* @param array $data Notification data
 	* @return array
 	*/
 	public function users_to_query()

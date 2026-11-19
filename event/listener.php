@@ -105,7 +105,7 @@ class listener implements EventSubscriberInterface
 			'core.viewtopic_post_rowset_data'					=> 'viewtopic_post_rowset_data',
 			'core.viewtopic_cache_user_data'					=> 'viewtopic_cache_user_data',
 			'core.viewtopic_modify_post_row'					=> 'viewtopic_modify_post_row',
-			'core.memberlist_modify_view_profile_template_vars' => 'memberlist_modify_view_profile_template_vars',
+			'core.memberlist_view_profile'						=> 'memberlist_view_profile',
 			'core.page_header'									=> 'page_header',
 			'core.modify_mcp_modules_display_option'			=> 'modify_mcp_modules_display_option',
 			'core.get_logs_modify_type'							=> 'get_logs_modify_type',
@@ -259,28 +259,22 @@ class listener implements EventSubscriberInterface
 	*
 	* @param \phpbb\event\data $event
 	*/
-	public function memberlist_modify_view_profile_template_vars($event)
+	public function memberlist_view_profile($event)
 	{
-		$template_ary = $event['template_ary'];
-		$user_id = (int) $event['user_id'];
-
-		$sql = 'SELECT user_karma
-			FROM ' . USERS_TABLE . '
-			WHERE user_id = ' . (int) $user_id;
-		$result = $this->db->sql_query($sql);
-		$user_karma = (int) $this->db->sql_fetchfield('user_karma');
-		$this->db->sql_freeresult($result);
+		$member = $event['member'];
+		$user_id = (int) $member['user_id'];
+		$user_karma = isset($member['user_karma']) ? (int) $member['user_karma'] : 0;
 
 		$enabled = isset($this->config['vinny_karma_enabled']) ? (bool) $this->config['vinny_karma_enabled'] : false;
 		$can_view = $enabled && $this->auth->acl_get('u_karma_view');
 		$can_manage = $enabled && $this->auth->acl_get('m_karma_manage');
 
-		$template_ary['USER_KARMA'] = $user_karma;
-		$template_ary['S_SHOW_KARMA'] = $can_view;
-		$template_ary['S_CAN_MANAGE_KARMA'] = $can_manage;
-		$template_ary['U_MCP_KARMA_MANAGE'] = $can_manage ? append_sid($this->root_path . 'mcp.' . $this->php_ext, 'i=-vinny-karma-mcp-main_module&mode=karma_user_details&u=' . $user_id) : '';
-
-		$event['template_ary'] = $template_ary;
+		$this->template->assign_vars(array(
+			'USER_KARMA'			=> $user_karma,
+			'S_SHOW_KARMA'			=> $can_view,
+			'S_CAN_MANAGE_KARMA'	=> $can_manage,
+			'U_MCP_KARMA_MANAGE'	=> $can_manage ? append_sid($this->root_path . 'mcp.' . $this->php_ext, 'i=-vinny-karma-mcp-main_module&amp;mode=karma_user_details&amp;u=' . $user_id) : '',
+		));
 	}
 
 	/**
@@ -399,7 +393,7 @@ class listener implements EventSubscriberInterface
 	{
 		$forum_id = $event['forum_id'];
 
-		if ($event['mode'] === 'mod' && is_array($forum_id) && !in_array(0, $forum_id))
+		if ($event['mode'] === 'mod' && !$event['topic_id'] && is_array($forum_id) && count($forum_id) > 1 && !in_array(0, $forum_id))
 		{
 			if ($this->auth->acl_get('m_karma_manage') || $this->auth->acl_get('a_'))
 			{
@@ -424,6 +418,55 @@ class listener implements EventSubscriberInterface
 
 			$this->db->sql_transaction('begin');
 
+			// Collect vote_ids and affected post_ids for votes cast by these users
+			$vote_ids = array();
+			$affected_post_ids = array();
+
+			$sql = 'SELECT vote_id, post_id
+				FROM ' . $this->table_prefix . 'vinny_karma_votes
+				WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
+			$result = $this->db->sql_query($sql);
+			while ($v_row = $this->db->sql_fetchrow($result))
+			{
+				$vote_ids[] = (int) $v_row['vote_id'];
+				$affected_post_ids[] = (int) $v_row['post_id'];
+			}
+			$this->db->sql_freeresult($result);
+			$affected_post_ids = array_values(array_unique($affected_post_ids));
+
+			// Collect vote_ids received on posts authored by these users
+			$sql = 'SELECT v.vote_id
+				FROM ' . $this->table_prefix . 'vinny_karma_votes v
+				INNER JOIN ' . POSTS_TABLE . ' p ON v.post_id = p.post_id
+				WHERE ' . $this->db->sql_in_set('p.poster_id', $user_ids);
+			$result = $this->db->sql_query($sql);
+			while ($v_row = $this->db->sql_fetchrow($result))
+			{
+				$vote_ids[] = (int) $v_row['vote_id'];
+			}
+			$this->db->sql_freeresult($result);
+
+			// Collect affected author_ids before deleting votes
+			$affected_author_ids = array();
+			if (!empty($affected_post_ids))
+			{
+				$sql = 'SELECT DISTINCT poster_id
+					FROM ' . POSTS_TABLE . '
+					WHERE ' . $this->db->sql_in_set('post_id', $affected_post_ids);
+				$result = $this->db->sql_query($sql);
+				while ($a_row = $this->db->sql_fetchrow($result))
+				{
+					$affected_author_ids[] = (int) $a_row['poster_id'];
+				}
+				$this->db->sql_freeresult($result);
+			}
+
+			$vote_ids = array_values(array_unique($vote_ids));
+			if (!empty($vote_ids))
+			{
+				$this->notification_manager->delete_notifications('vinny.karma.notification.type.karma_vote', $vote_ids);
+			}
+
 			// Delete all votes cast by these users
 			$sql = 'DELETE FROM ' . $this->table_prefix . 'vinny_karma_votes
 				WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
@@ -444,10 +487,40 @@ class listener implements EventSubscriberInterface
 				WHERE ' . $this->db->sql_in_set('poster_id', $user_ids);
 			$this->db->sql_query($sql);
 
-			$this->db->sql_transaction('commit');
+			// Recalculate post_karma only for affected posts
+			if (!empty($affected_post_ids))
+			{
+				$sql = 'UPDATE ' . POSTS_TABLE . '
+					SET post_karma = (
+						SELECT COALESCE(SUM(vote_direction), 0)
+						FROM ' . $this->table_prefix . 'vinny_karma_votes
+						WHERE post_id = ' . POSTS_TABLE . '.post_id
+					)
+					WHERE ' . $this->db->sql_in_set('post_id', $affected_post_ids);
+				$this->db->sql_query($sql);
+			}
 
-			// Recalculate all scores
-			$this->resync();
+			// Recalculate user_karma only for affected authors
+			if (!empty($affected_author_ids))
+			{
+				$affected_author_ids = array_filter($affected_author_ids, function($id) use ($user_ids) {
+					return $id && $id != ANONYMOUS && !in_array($id, $user_ids);
+				});
+
+				if (!empty($affected_author_ids))
+				{
+					$sql = 'UPDATE ' . USERS_TABLE . '
+						SET user_karma = user_karma_adjustment + (
+							SELECT COALESCE(SUM(post_karma), 0)
+							FROM ' . POSTS_TABLE . '
+							WHERE poster_id = ' . USERS_TABLE . '.user_id
+						)
+						WHERE ' . $this->db->sql_in_set('user_id', $affected_author_ids);
+					$this->db->sql_query($sql);
+				}
+			}
+
+			$this->db->sql_transaction('commit');
 		}
 	}
 
@@ -536,29 +609,5 @@ class listener implements EventSubscriberInterface
 			}
 			$this->db->sql_freeresult($result);
 		}
-	}
-
-	/**
-	* Recalculates karma scores for all posts and users
-	*/
-	protected function resync()
-	{
-		// Recalculate post_karma for all posts
-		$sql = 'UPDATE ' . POSTS_TABLE . '
-			SET post_karma = (
-				SELECT COALESCE(SUM(vote_direction), 0)
-				FROM ' . $this->table_prefix . 'vinny_karma_votes
-				WHERE post_id = ' . POSTS_TABLE . '.post_id
-			)';
-		$this->db->sql_query($sql);
-
-		// Recalculate user_karma for all users
-		$sql = 'UPDATE ' . USERS_TABLE . '
-			SET user_karma = user_karma_adjustment + (
-				SELECT COALESCE(SUM(post_karma), 0)
-				FROM ' . POSTS_TABLE . '
-				WHERE poster_id = ' . USERS_TABLE . '.user_id
-			)';
-		$this->db->sql_query($sql);
 	}
 }
