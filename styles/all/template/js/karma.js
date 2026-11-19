@@ -9,7 +9,7 @@
 			return '#';
 		}
 		try {
-			var parsed = new URL(rawUrl, window.location.origin);
+			var parsed = new URL(rawUrl, window.location.href);
 			if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
 				return parsed.href;
 			}
