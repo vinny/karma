@@ -3,6 +3,22 @@
 (function($) {
 	'use strict';
 
+	// Validate vote URLs before assigning to href (prevents javascript: URI injection)
+	function getSafeVoteUrl(rawUrl) {
+		if (!rawUrl) {
+			return '#';
+		}
+		try {
+			var parsed = new URL(rawUrl, window.location.origin);
+			if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+				return parsed.href;
+			}
+		} catch (e) {
+			return '#';
+		}
+		return '#';
+	}
+
 	// Move karma profile field below posts count on page load
 	$(function() {
 		$('.profile-karma').each(function() {
@@ -65,7 +81,9 @@
 							if ($karmaLine.length) {
 								$karmaLine.find('.profile-karma-value').text(res.user_karma);
 							} else {
-								var $newKarmaLine = $('<dd class="profile-custom-field profile-karma"><strong>' + langKarma + ' </strong><span class="profile-karma-value">' + res.user_karma + '</span></dd>');
+								var $newKarmaLine = $('<dd></dd>', { 'class': 'profile-custom-field profile-karma' })
+									.append($('<strong></strong>').text(langKarma + ' '))
+									.append($('<span></span>', { 'class': 'profile-karma-value' }).text(res.user_karma));
 								var $posts = $profile.find('.profile-posts');
 								if ($posts.length) {
 									$newKarmaLine.insertAfter($posts);
@@ -83,8 +101,8 @@
 
 			var $upvoteBtn = $panel.find('.karma-upvote');
 			var $downvoteBtn = $panel.find('.karma-downvote');
-			var upvoteUrl = $upvoteBtn.attr('data-vote-url');
-			var downvoteUrl = $downvoteBtn.attr('data-vote-url');
+			var upvoteUrl = getSafeVoteUrl($upvoteBtn.attr('data-vote-url'));
+			var downvoteUrl = getSafeVoteUrl($downvoteBtn.attr('data-vote-url'));
 			var langUp = $config.attr('data-lang-upvote');
 			var langDown = $config.attr('data-lang-downvote');
 			var langAlreadyUp = $config.attr('data-lang-already-up');

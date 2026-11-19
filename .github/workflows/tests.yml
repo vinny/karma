@@ -12,6 +12,9 @@ on:
       - master
       - dev/*
 
+permissions:
+  contents: read
+
 jobs:
   call-tests:
     name: Extension tests
