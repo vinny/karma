@@ -27,7 +27,8 @@
 		"version-check": {
 			"host": "www.phpbb.com",
 			"directory": "/customise/db/extension/karma",
-			"filename": "version_check"
+			"filename": "version_check",
+			"ssl": true
 		}
 	}
 }

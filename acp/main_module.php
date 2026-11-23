@@ -38,7 +38,20 @@ class main_module
 	*/
 	public function main($id, $mode)
 	{
-		global $db, $request, $template, $user, $config, $phpbb_container;
+		global $phpbb_container;
+
+		/** @var \phpbb\db\driver\driver_interface $db */
+		$db = $phpbb_container->get('dbal.conn');
+		/** @var \phpbb\request\request $request */
+		$request = $phpbb_container->get('request');
+		/** @var \phpbb\template\template $template */
+		$template = $phpbb_container->get('template');
+		/** @var \phpbb\user $user */
+		$user = $phpbb_container->get('user');
+		/** @var \phpbb\config\config $config */
+		$config = $phpbb_container->get('config');
+		/** @var \phpbb\cache\driver\driver_interface $cache */
+		$cache = $phpbb_container->get('cache.driver');
 
 		$this->root_path = $phpbb_container->getParameter('core.root_path');
 		$this->php_ext = $phpbb_container->getParameter('core.php_ext');
@@ -137,6 +150,8 @@ class main_module
 							WHERE poster_id = ' . USERS_TABLE . '.user_id
 						)';
 					$db->sql_query($sql);
+
+					$cache->destroy('sql', USERS_TABLE);
 
 					$phpbb_log = $phpbb_container->get('log');
 					$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'LOG_ACP_KARMA_RESYNC', time());
@@ -283,6 +298,8 @@ class main_module
 
 							$db->sql_transaction('commit');
 
+							$cache->destroy('sql', USERS_TABLE);
+
 							$phpbb_log = $phpbb_container->get('log');
 							$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'LOG_ACP_KARMA_RESET_USER', time(), array($row['username']));
 
@@ -379,7 +396,7 @@ class main_module
 				$post_url = '';
 				if ($row['post_id'] && $row['topic_id'])
 				{
-					$post_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . $row['post_id'] . '#p' . $row['post_id']);
+					$post_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . (int) $row['post_id']) . '#p' . (int) $row['post_id'];
 				}
 
 				$template->assign_block_vars('votes', array(

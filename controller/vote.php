@@ -465,13 +465,13 @@ class vote
 		}
 
 		$poster_id = (int) $post['poster_id'];
-		$topic_id = (int) $post['topic_id'];
 
-		$redirect_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . $post_id . '#p' . $post_id);
+		$redirect_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . $post_id) . '#p' . $post_id;
+		$raw_redirect_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . $post_id, false) . '#p' . $post_id;
 
 		if ($this->request->is_set_post('cancel'))
 		{
-			return new \Symfony\Component\HttpFoundation\RedirectResponse($redirect_url);
+			return new \Symfony\Component\HttpFoundation\RedirectResponse($raw_redirect_url);
 		}
 
 		// If user clicked "Confirm", delete
@@ -548,6 +548,8 @@ class vote
 			confirm_box(false, $this->user->lang('VINNY_KARMA_MCP_RESET_POST_CONFIRM'), build_hidden_fields(array(
 				'hash'	=> $hash,
 			)));
+
+			return new \Symfony\Component\HttpFoundation\RedirectResponse($raw_redirect_url);
 		}
 	}
 }

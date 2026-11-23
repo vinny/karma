@@ -51,7 +51,20 @@ class main_module
 	*/
 	public function main($id, $mode)
 	{
-		global $db, $request, $template, $user, $config, $phpbb_container, $auth;
+		global $phpbb_container;
+
+		/** @var \phpbb\db\driver\driver_interface $db */
+		$db = $phpbb_container->get('dbal.conn');
+		/** @var \phpbb\request\request $request */
+		$request = $phpbb_container->get('request');
+		/** @var \phpbb\template\template $template */
+		$template = $phpbb_container->get('template');
+		/** @var \phpbb\user $user */
+		$user = $phpbb_container->get('user');
+		/** @var \phpbb\auth\auth $auth */
+		$auth = $phpbb_container->get('auth');
+		/** @var \phpbb\cache\driver\driver_interface $cache */
+		$cache = $phpbb_container->get('cache.driver');
 
 		$this->root_path = $phpbb_container->getParameter('core.root_path');
 		$this->php_ext = $phpbb_container->getParameter('core.php_ext');
@@ -181,6 +194,8 @@ class main_module
 
 							$db->sql_transaction('commit');
 
+							$cache->destroy('sql', USERS_TABLE);
+
 							// Log moderation action to Mod Log
 							$phpbb_log = $phpbb_container->get('log');
 							$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_RESET_RECEIVED', time(), array(
@@ -282,6 +297,8 @@ class main_module
 
 								$db->sql_transaction('commit');
 
+								$cache->destroy('sql', USERS_TABLE);
+
 								// Log moderation action to Mod Log
 								$phpbb_log = $phpbb_container->get('log');
 								$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_RESET_CAST', time(), array(
@@ -304,7 +321,7 @@ class main_module
 					else if ($action === 'adjust_balance')
 					{
 						$adjustment = $request->variable('adjust_amount', 0);
-						$reason = $request->variable('adjust_reason', '', true);
+						$reason = trim($request->variable('adjust_reason', '', true));
 
 						if ($adjustment === 0 || $reason === '')
 						{
@@ -319,6 +336,8 @@ class main_module
 								WHERE user_id = ' . (int) $user_id;
 							$db->sql_query($sql);
 
+							$cache->destroy('sql', USERS_TABLE);
+
 							// Log moderation action to Mod Log
 							$phpbb_log = $phpbb_container->get('log');
 							$phpbb_log->add('mod', $user->data['user_id'], $user->ip, 'LOG_MCP_KARMA_ADJUST', time(), array(
@@ -326,7 +345,7 @@ class main_module
 								'topic_id' => 0,
 								$userrow['username'],
 								(int) $adjustment,
-								$reason,
+								utf8_encode_ucr($reason),
 							));
 
 							meta_refresh(3, $this->u_action);
@@ -385,11 +404,10 @@ class main_module
 					$post_url = '';
 					if ($row['post_id'] && $row['topic_id'])
 					{
-						$post_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . $row['post_id'] . '#p' . $row['post_id']);
+						$post_url = append_sid($this->root_path . 'viewtopic.' . $this->php_ext, 'p=' . (int) $row['post_id']) . '#p' . (int) $row['post_id'];
 					}
 
 					$template->assign_block_vars('votes', array(
-						'VOTE_ID'		=> $row['vote_id'],
 						'VOTER'			=> $voter_link,
 						'AUTHOR'		=> $author_link,
 						'POST_URL'		=> $post_url,
@@ -406,7 +424,7 @@ class main_module
 				$pagination->generate_template_pagination($base_url, 'pagination', 'start', $total_votes, $limit, $start);
 
 				$template->assign_vars(array(
-					'U_POST_ACTION'			=> $this->u_action,
+					'U_POST_ACTION'		=> $this->u_action,
 
 					'L_TITLE'			=> $user->lang['MCP_KARMA_USER_DETAILS'],
 
@@ -415,9 +433,6 @@ class main_module
 					'USER_KARMA'		=> (int) $userrow['user_karma'],
 
 					'USERNAME_FULL'		=> get_username_string('full', $userrow['user_id'], $userrow['username'], $userrow['user_colour']),
-					'USERNAME_COLOUR'	=> get_username_string('colour', $userrow['user_id'], $userrow['username'], $userrow['user_colour']),
-					'USERNAME'			=> get_username_string('username', $userrow['user_id'], $userrow['username'], $userrow['user_colour']),
-					'U_PROFILE'			=> get_username_string('profile', $userrow['user_id'], $userrow['username'], $userrow['user_colour']),
 
 					'AVATAR_IMG'		=> $avatar_img,
 				));

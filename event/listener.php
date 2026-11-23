@@ -128,10 +128,6 @@ class listener implements EventSubscriberInterface
 			'ext_name' => 'vinny/karma',
 			'lang_set' => 'karma',
 		);
-		$lang_set_ext[] = array(
-			'ext_name' => 'vinny/karma',
-			'lang_set' => 'permissions_karma',
-		);
 		$event['lang_set_ext'] = $lang_set_ext;
 	}
 
@@ -354,15 +350,8 @@ class listener implements EventSubscriberInterface
 		if ($enabled)
 		{
 			$this->template->assign_vars(array(
-				'S_KARMA_ENABLED'           => true,
-				'S_KARMA_ENABLE_DOWNVOTE'   => isset($this->config['vinny_karma_enable_downvote']) ? (bool) $this->config['vinny_karma_enable_downvote'] : true,
-				'L_KARMA_UPVOTE'            => $this->user->lang('KARMA_UPVOTE'),
-				'L_KARMA_DOWNVOTE'          => $this->user->lang('KARMA_DOWNVOTE'),
-				'L_KARMA_ALREADY_VOTED_UP'  => $this->user->lang('KARMA_ALREADY_VOTED_UP'),
-				'L_KARMA_ALREADY_VOTED_DOWN' => $this->user->lang('KARMA_ALREADY_VOTED_DOWN'),
-				'L_KARMA_ERROR_VOTE_FAILED' => $this->user->lang('KARMA_ERROR_VOTE_FAILED'),
-				'S_ALLOW_KARMA_RANKING'     => $this->auth->acl_get('u_karma_ranking'),
-				'U_KARMA_RANKING'           => $this->helper->route('vinny_karma_ranking'),
+				'S_ALLOW_KARMA_RANKING'	=> $this->auth->acl_get('u_karma_ranking'),
+				'U_KARMA_RANKING'		=> $this->helper->route('vinny_karma_ranking'),
 			));
 		}
 	}

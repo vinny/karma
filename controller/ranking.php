@@ -102,7 +102,7 @@ class ranking
 				AND user_id <> ' . ANONYMOUS . '
 				AND user_karma <> 0
 			ORDER BY user_karma DESC, username_clean ASC';
-		$result = $this->db->sql_query_limit($sql, 50, 0, 300);
+		$result = $this->db->sql_query_limit($sql, 50, 0);
 
 		$position = 1;
 		while ($row = $this->db->sql_fetchrow($result))
@@ -117,11 +117,7 @@ class ranking
 			$ranking_data[] = array(
 				'POSITION'		=> $position,
 				'AVATAR'		=> $avatar,
-				'USER_ID'		=> (int) $row['user_id'],
-				'USERNAME'		=> $row['username'],
-				'USER_COLOUR'	=> $row['user_colour'],
 				'USER_FULL'		=> get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']),
-				'USER_PROFILE'	=> get_username_string('profile', $row['user_id'], $row['username'], $row['user_colour']),
 				'TOTAL_KARMA'	=> (int) $row['user_karma'],
 			);
 			$position++;
@@ -133,10 +129,6 @@ class ranking
 		{
 			$this->template->assign_block_vars('ranking_row', $row_data);
 		}
-
-		$this->template->assign_vars(array(
-			'S_IS_KARMA_RANKING_PAGE' => true,
-		));
 
 		// Add Breadcrumbs (navlinks)
 		$this->template->assign_block_vars('navlinks', array(
